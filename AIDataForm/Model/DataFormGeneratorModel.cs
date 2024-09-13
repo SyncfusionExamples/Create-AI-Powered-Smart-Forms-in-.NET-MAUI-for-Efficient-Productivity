@@ -8,52 +8,25 @@
     /// </summary>
     public class DataFormGeneratorModel : INotifyPropertyChanged
     {
-        /// <summary>
-        /// Holds the azure AI services.
-        /// </summary>
-        private AzureAIServices azureAIServices = new AzureAIServices();
 
-        /// <summary>
-        /// Collection of messages in a conversation.
-        /// </summary>
-        private ObservableCollection<object> messages;
-
-        /// <summary>
-        /// Holds the showHeader value.
-        /// </summary>
-        private bool showHeader = true;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DataFormGeneratorModel"/> class.
-        /// </summary>
-        public DataFormGeneratorModel()
-        {
-            this.messages = new ObservableCollection<object>();
-        }
+        private bool showDataForm;
 
         /// <summary>
         /// Gets or sets the collection of messages of a conversation.
         /// </summary>
-        public ObservableCollection<object> Messages
-        {
-            get
-            {
-                return this.messages;
-            }
-
-            set
-            {
-                this.messages = value;
-            }
-        }
+        public ObservableCollection<object> Messages { get; set; } = new ObservableCollection<object>();
 
         /// <summary>
         /// Gets or sets the show header.
         /// </summary>
-        public bool ShowHeader
+        public bool ShowDataForm
         {
-            get { return this.showHeader; }
-            set { this.showHeader = value; RaisePropertyChanged("ShowHeader"); }
+            get { return this.showDataForm; }
+            set
+            {
+                this.showDataForm = value;
+                RaisePropertyChanged(nameof(this.ShowDataForm));
+            }
         }
 
         /// <summary>

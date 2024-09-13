@@ -2,6 +2,7 @@
 {
     using Syncfusion.Maui.AIAssistView;
     using System;
+    using Syncfusion.Maui.Core;
     using System.Collections.ObjectModel;
     using System.Threading.Tasks;
     using Newtonsoft.Json;
@@ -76,6 +77,11 @@
         public Label? DataFormNameLabel { get; set; }
 
         /// <summary>
+        /// Holds the busy indicator instance.
+        /// </summary>
+        public SfBusyIndicator? BusyIndicator { get; set; }
+
+        /// <summary>
         /// Gets or sets the feedback form.
         /// </summary>
         public SfDataForm? DataForm { get; set; }
@@ -83,7 +89,9 @@
         /// <summary>
         /// Gets or sets the entry.
         /// </summary>
-        public Entry? Entry { get; set; }
+        public Editor? Entry { get; set; }
+
+        public Label? DescribeLabel { get; set; }
 
         /// <summary>
         /// Gets or sets the create button.
@@ -108,6 +116,7 @@
         {
             base.OnAttachedTo(bindable);
             this.assistView = bindable;
+
             if (this.assistView != null)
             {
                 this.assistView.Request += this.OnAssistViewRequest;
@@ -162,16 +171,19 @@
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The event args.</param>
-        private void OnCreateButtonClicked(object? sender, EventArgs e)
+        private async void OnCreateButtonClicked(object? sender, EventArgs e)
         {
+            UpdateBusyIndicator(true);
+
             if (this.azureAIServices.Client != null)
             {
                 this.GetDataFormFromAI(this.Entry!.Text);
-                AssistItem subjectMessage = new AssistItem() { Text = "Data From has created successfully..!", ShowAssistItemFooter = false };
-                this.DataFormGeneratorModel?.Messages.Add(subjectMessage);
             }
             else
             {
+                UpdateCreateVisibility();
+                UpdateBusyIndicator(false);
+
                 AssistItem subjectMessage = new AssistItem() { Text = "You are in offline mode...", ShowAssistItemFooter = false };
                 this.DataFormGeneratorModel?.Messages.Add(subjectMessage);
                 AssistItemSuggestion assistItemSuggestion = this.GetSubjectSuggestion();
@@ -191,9 +203,6 @@
             if (this.azureAIServices.Client != null)
             {
                 this.GetDataFormFromAI(requestText);
-                AssistItem subjectMessage = new AssistItem() { Text = "Your modification successfully done.", ShowAssistItemFooter = false };
-                await Task.Delay(1000);
-                this.DataFormGeneratorModel?.Messages.Add(subjectMessage);
                 return;
             }
 
@@ -236,7 +245,7 @@
             }
             else if (requestText == this.FeedbackFormActions[0])
             {
-                if (this.DataForm.Items != null && this.DataForm.Items.Count > 0)
+                if (this.DataForm != null && this.DataForm.Items != null && this.DataForm.Items.Count > 0)
                 {
                     var removeItem = this.DataForm.Items.FirstOrDefault(x => (x as DataFormItem).FieldName == "ProductVersion");
                     if (removeItem != null)
@@ -287,6 +296,8 @@
                 new DataFormTextItem() { FieldName = "ZipCode" }
             };
             this.DataForm!.Items = dataFormViewItems;
+
+
         }
 
         private void InitializeOfflineFeedbackDataForm()
@@ -301,6 +312,16 @@
                 new DataFormMultilineItem() { FieldName = "Comments" },
             };
             this.DataForm!.Items = dataFormViewItems;
+
+        }
+
+        private void UpdateBusyIndicator(bool value)
+        {
+            if (this.BusyIndicator != null)
+            {
+                this.BusyIndicator.IsVisible = value;
+                this.BusyIndicator.IsRunning = value;
+            }
         }
 
         /// <summary>
@@ -458,7 +479,7 @@
 
             var openAIJsonData = JsonConvert.DeserializeObject<Dictionary<string, object>>(response);
 
-            string dataFormNamePrompt = $"Generate a title for a data form based on the following JSON string: {response}. The title should clearly reflect the purpose of the data form in general term. Provide only the title, with no additional explanation";
+            string dataFormNamePrompt = $"Generate a title for a data form based on the following string: {response}. The title should clearly reflect the purpose of the data form in general term. Provide only the title, with no additional explanation";
             string getDataFormName = await this.azureAIServices.GetResultsFromAI(dataFormNamePrompt);
             this.DataFormNameLabel!.Text = getDataFormName;
 
@@ -470,18 +491,33 @@
             var typeResponse = await this.azureAIServices.GetResultsFromAI(typePrompt);
             var dataFormTypes = JsonConvert.DeserializeObject<Dictionary<string, object>>(typeResponse);
 
-
-            var items = new ObservableCollection<DataFormViewItem>();
-            foreach (var data in dataFormTypes!)
+            if (this.DataForm != null)
             {
-                DataFormItem dataFormItem = GenerateDataFormItems(data.Value?.ToString(), data.Key);
-                items.Add(dataFormItem);
+                var items = new ObservableCollection<DataFormViewItem>();
+                foreach (var data in dataFormTypes!)
+                {
+                    DataFormItem dataFormItem = GenerateDataFormItems(data.Value?.ToString(), data.Key);
+                    if (dataFormItem != null)
+                        items.Add(dataFormItem);
+                }
+
+                this.DataForm.Items = items;
             }
 
-            this.DataForm.Items = items;
-
-            AssistItem subjectMessage = new AssistItem() { Text = "As per your comments data form created successfully...", ShowAssistItemFooter = false };
+            AssistItem subjectMessage = new AssistItem() { Text = "As per your comment data form created successfully...", ShowAssistItemFooter = false };
             this.DataFormGeneratorModel?.Messages.Add(subjectMessage);
+
+            UpdateCreateVisibility();
+            UpdateBusyIndicator(false);
+        }
+
+        private void UpdateCreateVisibility()
+        {
+            this.Entry.IsVisible = false;
+            this.DescribeLabel.IsVisible = false;
+            this.CreateButton.IsVisible = false;
+            this.DataFormGeneratorModel.ShowDataForm = true;
+
         }
 
         /// <summary>
@@ -492,9 +528,9 @@
         {
             if (action == "Add" || action == "Remove")
             {
-                string prompt = $"Generate a Property names based on the user prompt: {userPrompt}.";
+                string prompt = $"Generate a Property name based on the user prompt: {userPrompt}.";
                 string condition = "The result must be in string" +
-                    "Property names must be in PascalCase. " +
+                    "Property name must be in PascalCase. " +
                     "Without additional formatting characters like backticks, newlines, or extra spaces.";
                 string response = await this.azureAIServices.GetResultsFromAI(prompt + condition);
 
@@ -506,8 +542,8 @@
             $"The available DataForm item types include: DataFormTextItem , DataFormMultiLineTextItem, DataFormPasswordItem, DataFormNumericItem, DataFormMaskedTextItem, DataFormDateItem, DataFormTimeItem, DataFormCheckBoxItem, DataFormSwitchItem, DataFormPickerItem, DataFormComboBoxItem, DataFormAutoCompleteItem, DataFormRadioGroupItem, DataFormSegmentItem" +
             "without any additional explanations or comments.";
                         var typeResponse = await this.azureAIServices.GetResultsFromAI(typePrompt);
-                        var dataFormTypes = JsonConvert.DeserializeObject<Dictionary<string, object>>(typeResponse);
 
+                        var dataFormTypes = JsonConvert.DeserializeObject<Dictionary<string, object>>(typeResponse);
                         if (dataFormTypes != null)
                         {
                             if (dataFormTypes != null && dataFormTypes.Count > 0)
@@ -516,7 +552,12 @@
                                 if (newItem.Value != null)
                                 {
                                     DataFormItem dataFormItem = GenerateDataFormItems(newItem.Value.ToString(), newItem.Key);
-                                    this.DataForm.Items.Add(dataFormItem);
+                                    if (dataFormItem != null)
+                                    {
+                                        this.DataForm.Items.Add(dataFormItem);
+                                        UpdateChangesResponse();
+                                    }
+
                                 }
                             }
                         }
@@ -527,6 +568,7 @@
                         if (removeItem != null)
                         {
                             this.DataForm.Items.Remove(removeItem);
+                            UpdateChangesResponse();
                         }
                     }
                 }
@@ -539,39 +581,47 @@
                     "Without additional formatting characters like backticks, newlines, or extra spaces.";
                 string response = await this.azureAIServices.GetResultsFromAI(prompt + condition);
 
-                string prompt1 = $"Generate a Property names based on the user prompt: {userPrompt}. ";
-                string condition1 = "The result must be in string" +
-                   "Property names must be in PascalCase. " +
-                   "Without additional formatting characters like backticks, newlines, or extra spaces.";
-                string response1 = await this.azureAIServices.GetResultsFromAI(prompt1 + condition1);
-
                 List<string> propertyNames = JsonConvert.DeserializeObject<List<string>>(response);
 
-                int index = propertyNames.IndexOf(response1);
-
-                string typePrompt = $"Given a string representing user data, map {response1} property to the most appropriate DataForm item type. " +
-          $"The available DataForm item types include: DataFormTextItem , DataFormMultiLineTextItem, DataFormPasswordItem, DataFormNumericItem, DataFormMaskedTextItem, DataFormDateItem, DataFormTimeItem, DataFormCheckBoxItem, DataFormSwitchItem, DataFormPickerItem, DataFormComboBoxItem, DataFormAutoCompleteItem, DataFormRadioGroupItem, DataFormSegmentItem" +
-          "without any additional explanations or comments.";
-                var typeResponse = await this.azureAIServices.GetResultsFromAI(typePrompt);
-                var dataFormTypes = JsonConvert.DeserializeObject<Dictionary<string, object>>(typeResponse);
-
-                if (dataFormTypes != null)
+                if (propertyNames != null && propertyNames.Count > 0)
                 {
-                    if (dataFormTypes != null && dataFormTypes.Count > 0)
+                    string prompt1 = $"Generate a Property name based on the user prompt: {userPrompt}. ";
+                    string condition1 = "The result must be in string" +
+                       "Property names must be in PascalCase. " +
+                       "Without additional formatting characters like backticks, newlines, or extra spaces.";
+                    string response1 = await this.azureAIServices.GetResultsFromAI(prompt1 + condition1);
+
+                    int index = propertyNames.IndexOf(response1);
+
+                    string typePrompt = $"Given a string representing user data, map {response1} property to the most appropriate DataForm item type. " +
+              $"The available DataForm item types include: DataFormTextItem , DataFormMultiLineTextItem, DataFormPasswordItem, DataFormNumericItem, DataFormMaskedTextItem, DataFormDateItem, DataFormTimeItem, DataFormCheckBoxItem, DataFormSwitchItem, DataFormPickerItem, DataFormComboBoxItem, DataFormAutoCompleteItem, DataFormRadioGroupItem, DataFormSegmentItem" +
+              "without any additional explanations or comments.";
+                    var typeResponse = await this.azureAIServices.GetResultsFromAI(typePrompt);
+                    var dataFormTypes = JsonConvert.DeserializeObject<Dictionary<string, object>>(typeResponse);
+
+                    if (dataFormTypes != null)
                     {
-                        var newItem = dataFormTypes.FirstOrDefault();
-                        if (newItem.Value != null)
+                        if (dataFormTypes != null && dataFormTypes.Count > 0)
                         {
-                            this.DataForm.Items[index] = GenerateDataFormItems(newItem.Value.ToString(), newItem.Key);
+                            var newItem = dataFormTypes.FirstOrDefault();
+                            if (newItem.Value != null)
+                            {
+                                this.DataForm.Items[index] = GenerateDataFormItems(newItem.Value.ToString(), newItem.Key);
+                                UpdateChangesResponse();
+                            }
                         }
                     }
                 }
             }
+        }
 
-            AssistItem subjectMessage = new AssistItem() { Text = "Your all the modifications are done successfully...", ShowAssistItemFooter = false };
+        private void UpdateChangesResponse()
+        {
+            AssistItem subjectMessage = new AssistItem() { Text = "Your modifications have been completed successfully....", ShowAssistItemFooter = false };
             this.DataFormGeneratorModel?.Messages.Add(subjectMessage);
         }
-        private DataFormItem GenerateDataFormItems(string dataFormItemType, string fieldName)
+
+        private DataFormItem? GenerateDataFormItems(string dataFormItemType, string fieldName)
         {
             DataFormItem dataFormItem = dataFormItemType switch
             {
@@ -592,8 +642,19 @@
                 _ => null
             };
 
+            if (dataFormItem == null)
+            {
+                return null;
+            }
+
             dataFormItem.FieldName = fieldName;
             dataFormItem.LabelText = GetLabelText(fieldName);
+
+            if (fieldName == "Email" && dataFormItem is DataFormTextItem emailEditor)
+            {
+                emailEditor.Keyboard = Keyboard.Email;
+            }
+
             return dataFormItem;
         }
 

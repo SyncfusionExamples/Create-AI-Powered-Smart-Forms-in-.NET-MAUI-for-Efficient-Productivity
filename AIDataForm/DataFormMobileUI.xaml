@@ -8,7 +8,7 @@
              xmlns:local="clr-namespace:AIDataForm"
              xmlns:buttons="clr-namespace:Syncfusion.Maui.Buttons;assembly=Syncfusion.Maui.Buttons"
              xmlns:aiassistview="clr-namespace:Syncfusion.Maui.AIAssistView;assembly=Syncfusion.Maui.AIAssistView">
-    
+
     <Grid>
         <Grid.BindingContext>
             <local:DataFormGeneratorModel x:Name="dataFormGeneratorModel" />
@@ -29,8 +29,8 @@
          AbsoluteLayout.LayoutFlags="PositionProportional"
        />
         <Grid ColumnDefinitions="Auto,Auto" HorizontalOptions="Center" VerticalOptions="Center" ColumnSpacing="5">
-            <Entry x:Name="entry" Grid.Column="0" VerticalOptions="Center" HorizontalOptions="Center" WidthRequest="300" HeightRequest="50" Placeholder="Create your own form"/>
-            <Button x:Name="createButton" Clicked="createButton_Clicked" Grid.Column="1" CornerRadius="5" Text="Create" HeightRequest="50" VerticalOptions="Center" HorizontalOptions="End"/>
+            <Editor x:Name="entry" Grid.Column="0" VerticalOptions="Center" HorizontalOptions="Center" WidthRequest="300" HeightRequest="50" Placeholder="Create your own form"/>
+            <Button x:Name="createButton"  Grid.Column="1" CornerRadius="5" Text="Create" HeightRequest="50" VerticalOptions="Center" HorizontalOptions="End"/>
 
             <Grid x:Name="mainGrid" ColumnDefinitions="Auto,Auto" Grid.ColumnSpan="3" IsVisible="False">
                 <Grid Grid.Column="0">
@@ -48,7 +48,7 @@
                                 <RowDefinition Height="75"/>
                             </Grid.RowDefinitions>
 
-                            <Label x:Name="dataFormNameLabel" Text="Your form render here..." TextColor="{DynamicResource SfDataFormNormalEditorTextColor}" FontSize="Subtitle" 
+                            <Label x:Name="dataFormNameLabel" Text="Your form renders here..." TextColor="{DynamicResource SfDataFormNormalEditorTextColor}" FontSize="Subtitle" 
                              FontAttributes="Bold" VerticalTextAlignment="Center"
                              HorizontalTextAlignment="Center"/>
                             <dataform:SfDataForm x:Name="dataForm"
@@ -82,82 +82,13 @@
                                 </Grid.BindingContext>
                                 <Frame BorderColor="Gray" VerticalOptions="Center" HeightRequest="500">
                                     <aiassistview:SfAIAssistView x:Name="aiAssistView"
-                               ShowHeader="{Binding ShowHeader}"
+                               ShowHeader="False"
                                AssistItems="{Binding Messages}">
 
                                         <aiassistview:SfAIAssistView.Behaviors>
                                             <local:DataFormAssistViewBehavior x:Name="dataFormAssistViewModel"  DataFormNameLabel="{x:Reference dataFormNameLabel}" DataForm="{x:Reference dataForm}" DataFormGeneratorModel="{x:Reference dataFormGeneratorModel}" Entry="{x:Reference entry}" CreateButton="{x:Reference createButton}" AIActionButton="{x:Reference aiActionButton}"/>
                                         </aiassistview:SfAIAssistView.Behaviors>
 
-                                        <aiassistview:SfAIAssistView.HeaderTemplate>
-                                            <DataTemplate>
-                                                <VerticalStackLayout Padding="0,32,0,0" Spacing="12">
-                                                    <Label Text="How can I help you?"
-                                                        FontSize="Subtitle"
-                                                        HorizontalOptions="Center" />
-                                                    <listView:SfListView x:Name="listView"
-                                                                      Orientation="Horizontal"
-                                                                      HeightRequest="{OnPlatform WinUI=200, Android=250, MacCatalyst=250, iOS=200}"
-                                                                      WidthRequest="{OnPlatform MacCatalyst= 480,Android=335, iOS=300}"
-                                                                      AutoFitMode="Height"
-                                                                      HorizontalOptions="Center"
-                                                                      ScrollBarVisibility="Never"
-                                                                      ItemSpacing="5">
-                                                        <listView:SfListView.ItemTemplate>
-                                                            <DataTemplate>
-                                                                <Grid Padding="4">
-                                                                    <Border WidthRequest="{OnPlatform WinUI=160,Android=150,MacCatalyst= 220 , iOS=130}"
-                                                                         HeightRequest="{OnPlatform WinUI=140,Android=130, MacCatalyst= 170, iOS=110}"
-                                                                         Stroke="Gray"
-                                                                         Padding="4">
-                                                                        <Border.StrokeShape>
-                                                                            <RoundRectangle CornerRadius="10" />
-                                                                        </Border.StrokeShape>
-                                                                        <Grid RowDefinitions="40,*">
-                                                                            <Label Grid.Row="0"
-                                                                                HorizontalOptions="End"
-                                                                                FontFamily="Maui Material Assets"
-                                                                                Text="&#xe73c;"
-                                                                                FontSize="16"
-                                                                                HeightRequest="52"
-                                                                                WidthRequest="52"
-                                                                                Padding="{OnPlatform WinUI=18, Android=15, MacCatalyst=15, iOS=15}" />
-                                                                            <Label Grid.Row="1"
-                                                                                Text="{Binding .}"
-                                                                                LineBreakMode="WordWrap"
-                                                                                VerticalTextAlignment="Center"
-                                                                                HorizontalTextAlignment="Center" />
-                                                                        </Grid>
-                                                                    </Border>
-                                                                </Grid>
-                                                            </DataTemplate>
-                                                        </listView:SfListView.ItemTemplate>
-                                                        <listView:SfListView.Resources>
-                                                            <Style TargetType="listView:ListViewItem">
-                                                                <Setter Property="VisualStateManager.VisualStateGroups">
-                                                                    <VisualStateGroupList>
-                                                                        <VisualStateGroup>
-                                                                            <VisualState x:Name="Normal">
-                                                                                <VisualState.Setters>
-                                                                                    <Setter Property="Background"
-                                                                                         Value="Transparent" />
-                                                                                </VisualState.Setters>
-                                                                            </VisualState>
-                                                                            <VisualState x:Name="PointerOver">
-                                                                                <VisualState.Setters>
-                                                                                    <Setter Property="Background"
-                                                                                         Value="Transparent" />
-                                                                                </VisualState.Setters>
-                                                                            </VisualState>
-                                                                        </VisualStateGroup>
-                                                                    </VisualStateGroupList>
-                                                                </Setter>
-                                                            </Style>
-                                                        </listView:SfListView.Resources>
-                                                    </listView:SfListView>
-                                                </VerticalStackLayout>
-                                            </DataTemplate>
-                                        </aiassistview:SfAIAssistView.HeaderTemplate>
                                     </aiassistview:SfAIAssistView>
                                 </Frame>
                             </Grid>
