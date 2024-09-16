@@ -483,7 +483,7 @@
 
             var openAIJsonData = JsonConvert.DeserializeObject<Dictionary<string, object>>(response);
 
-            string dataFormNamePrompt = $"Generate a title for a data form based on the following string: {response}. The title should clearly reflect the purpose of the data form in general term. Provide only the title, with no additional explanation";
+            string dataFormNamePrompt = $"Generate a title for a data form based on the following string: {userPrompt}. The title should clearly reflect the purpose of the data form in general term. Provide only the title, with no additional explanation";
             string getDataFormName = await this.semanticKernelService.GetAnswerFromGPT(dataFormNamePrompt);
             this.DataFormNameLabel!.Text = getDataFormName;
 
