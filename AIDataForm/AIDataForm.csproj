@@ -59,6 +59,7 @@
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Maui.Controls" Version="8.0.3" />
 		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.3" />
+		<PackageReference Include="Microsoft.SemanticKernel" Version="*" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
 		<PackageReference Include="Syncfusion.Maui.Buttons" Version="*" />
 		<PackageReference Include="Syncfusion.Maui.Calendar" Version="*" />
@@ -67,7 +68,6 @@
 		<PackageReference Include="Syncfusion.Maui.AIAssistView" Version="*" />
 		<PackageReference Include="Syncfusion.Maui.GridCommon" Version="*" />
 		<PackageReference Include="Syncfusion.Maui.ListView" Version="*" />
-	    <PackageReference Include="Azure.AI.OpenAI" Version="1.0.0-beta.15" />
 	    <PackageReference Include="Syncfusion.Maui.Picker" Version="*" />
 	    <PackageReference Include="Syncfusion.Maui.Popup" Version="*" />
 	    <PackageReference Include="System.Buffers" Version="4.5.1" />

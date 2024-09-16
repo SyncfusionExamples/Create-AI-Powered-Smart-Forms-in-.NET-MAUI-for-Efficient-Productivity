@@ -64,7 +64,7 @@
         /// <summary>
         /// Holds the azure AI services.
         /// </summary>
-        private AzureAIServices azureAIServices = new AzureAIServices();
+        private SemanticKernelService semanticKernelService = new SemanticKernelService();
 
         /// <summary>
         /// Gets or sets the data form generator model.
@@ -175,7 +175,7 @@
         {
             UpdateBusyIndicator(true);
 
-            if (this.azureAIServices.Client != null)
+            if (SemanticKernelService.IsCredentialValid)
             {
                 this.GetDataFormFromAI(this.Entry!.Text);
             }
@@ -200,7 +200,7 @@
         private async void OnAssistViewRequest(object? sender, RequestEventArgs e)
         {
             string requestText = e.RequestItem.Text;
-            if (this.azureAIServices.Client != null)
+            if (SemanticKernelService.IsCredentialValid)
             {
                 this.GetDataFormFromAI(requestText);
                 return;
@@ -423,12 +423,16 @@
                 $"If a new form needs to be created, return 'New Form'." +
                 $"If only the title needs to be changed, return 'Change Title'. " +
                 $"If no changes are required or if the input is improper or irrelevant, return 'No Change'. Please return only one of these options.";
-            var response = await this.azureAIServices.GetResultsFromAI(prompt);
+            var response = await this.semanticKernelService.GetAnswerFromGPT(prompt);
 
-            if (response == null)
+            if (string.IsNullOrEmpty(response))
             {
                 AssistItem subjectMessage = new AssistItem() { Text = "Please try again...", ShowAssistItemFooter = false };
                 this.DataFormGeneratorModel?.Messages.Add(subjectMessage);
+                UpdateCreateVisibility();
+                UpdateBusyIndicator(false);
+
+
             }
             else
             {
@@ -451,7 +455,7 @@
                 else if (response == "Change Title")
                 {
                     string dataFormNamePrompt = $"Change the title for data form based on user prompt: {userPrompt}. Provide only the title, with no additional explanation";
-                    string getDataFormName = await this.azureAIServices.GetResultsFromAI(dataFormNamePrompt);
+                    string getDataFormName = await this.semanticKernelService.GetAnswerFromGPT(dataFormNamePrompt);
                     this.DataFormNameLabel!.Text = getDataFormName;
                     AssistItem subjectMessage = new AssistItem() { Text = "The Data Form title changed successfully...", ShowAssistItemFooter = false };
                     this.DataFormGeneratorModel?.Messages.Add(subjectMessage);
@@ -475,12 +479,12 @@
                 "Property names must be in PascalCase. " +
                 "Must be property names and its value" +
                 "Without additional formatting characters like backticks, newlines, or extra spaces.";
-            var response = await this.azureAIServices.GetResultsFromAI(prompt + condition);
+            var response = await this.semanticKernelService.GetAnswerFromGPT(prompt + condition);
 
             var openAIJsonData = JsonConvert.DeserializeObject<Dictionary<string, object>>(response);
 
             string dataFormNamePrompt = $"Generate a title for a data form based on the following string: {response}. The title should clearly reflect the purpose of the data form in general term. Provide only the title, with no additional explanation";
-            string getDataFormName = await this.azureAIServices.GetResultsFromAI(dataFormNamePrompt);
+            string getDataFormName = await this.semanticKernelService.GetAnswerFromGPT(dataFormNamePrompt);
             this.DataFormNameLabel!.Text = getDataFormName;
 
             string typePrompt = $"Given a JSON string representing user data, map each property to the most appropriate DataForm item type. " +
@@ -488,7 +492,7 @@
             "Ensure that the resulting JSON is correctly formatted, with property names in PascalCase, and provide only the JSON object " +
             "The Json contains only item names and their above mentioned types." +
             "without any additional explanations or comments.";
-            var typeResponse = await this.azureAIServices.GetResultsFromAI(typePrompt);
+            var typeResponse = await this.semanticKernelService.GetAnswerFromGPT(typePrompt);
             var dataFormTypes = JsonConvert.DeserializeObject<Dictionary<string, object>>(typeResponse);
 
             if (this.DataForm != null)
@@ -532,7 +536,7 @@
                 string condition = "The result must be in string" +
                     "Property name must be in PascalCase. " +
                     "Without additional formatting characters like backticks, newlines, or extra spaces.";
-                string response = await this.azureAIServices.GetResultsFromAI(prompt + condition);
+                string response = await this.semanticKernelService.GetAnswerFromGPT(prompt + condition);
 
                 if (this.DataForm!.Items != null)
                 {
@@ -541,7 +545,7 @@
                         string typePrompt = $"Given a string representing user data, map {response} property to the most appropriate DataForm item type. " +
             $"The available DataForm item types include: DataFormTextItem , DataFormMultiLineTextItem, DataFormPasswordItem, DataFormNumericItem, DataFormMaskedTextItem, DataFormDateItem, DataFormTimeItem, DataFormCheckBoxItem, DataFormSwitchItem, DataFormPickerItem, DataFormComboBoxItem, DataFormAutoCompleteItem, DataFormRadioGroupItem, DataFormSegmentItem" +
             "without any additional explanations or comments.";
-                        var typeResponse = await this.azureAIServices.GetResultsFromAI(typePrompt);
+                        var typeResponse = await this.semanticKernelService.GetAnswerFromGPT(typePrompt);
 
                         var dataFormTypes = JsonConvert.DeserializeObject<Dictionary<string, object>>(typeResponse);
                         if (dataFormTypes != null)
@@ -579,7 +583,7 @@
                 string condition = "The result must be in List<string>" +
                     "Property names must be in PascalCase. " +
                     "Without additional formatting characters like backticks, newlines, or extra spaces.";
-                string response = await this.azureAIServices.GetResultsFromAI(prompt + condition);
+                string response = await this.semanticKernelService.GetAnswerFromGPT(prompt + condition);
 
                 List<string> propertyNames = JsonConvert.DeserializeObject<List<string>>(response);
 
@@ -589,14 +593,14 @@
                     string condition1 = "The result must be in string" +
                        "Property names must be in PascalCase. " +
                        "Without additional formatting characters like backticks, newlines, or extra spaces.";
-                    string response1 = await this.azureAIServices.GetResultsFromAI(prompt1 + condition1);
+                    string response1 = await this.semanticKernelService.GetAnswerFromGPT(prompt1 + condition1);
 
                     int index = propertyNames.IndexOf(response1);
 
                     string typePrompt = $"Given a string representing user data, map {response1} property to the most appropriate DataForm item type. " +
               $"The available DataForm item types include: DataFormTextItem , DataFormMultiLineTextItem, DataFormPasswordItem, DataFormNumericItem, DataFormMaskedTextItem, DataFormDateItem, DataFormTimeItem, DataFormCheckBoxItem, DataFormSwitchItem, DataFormPickerItem, DataFormComboBoxItem, DataFormAutoCompleteItem, DataFormRadioGroupItem, DataFormSegmentItem" +
               "without any additional explanations or comments.";
-                    var typeResponse = await this.azureAIServices.GetResultsFromAI(typePrompt);
+                    var typeResponse = await this.semanticKernelService.GetAnswerFromGPT(typePrompt);
                     var dataFormTypes = JsonConvert.DeserializeObject<Dictionary<string, object>>(typeResponse);
 
                     if (dataFormTypes != null)
