@@ -487,12 +487,11 @@
             string getDataFormName = await this.semanticKernelService.GetAnswerFromGPT(dataFormNamePrompt);
             this.DataFormNameLabel!.Text = getDataFormName;
 
-            string typePrompt = $"Given a JSON string representing user data, map each property to the most appropriate DataForm item type. " +
-            $"The available DataForm item types include: DataFormTextItem , DataFormMultiLineTextItem, DataFormPasswordItem, DataFormNumericItem, DataFormMaskedTextItem, DataFormDateItem, DataFormTimeItem, DataFormCheckBoxItem, DataFormSwitchItem, DataFormPickerItem, DataFormComboBoxItem, DataFormAutoCompleteItem, DataFormRadioGroupItem, DataFormSegmentItem" +
-            "Ensure that the resulting JSON is correctly formatted, with property names in PascalCase, and provide only the JSON object " +
-            "The Json contains only item names and their above mentioned types." +
-            "without any additional explanations or comments.";
+            string typePrompt = $" map {response} each property to the most appropriate DataForm available item type includes: DataFormTextItem , DataFormMultiLineTextItem, DataFormPasswordItem, DataFormNumericItem, DataFormMaskedTextItem, DataFormDateItem, DataFormTimeItem, DataFormCheckBoxItem, DataFormSwitchItem, DataFormPickerItem, DataFormComboBoxItem, DataFormAutoCompleteItem, DataFormRadioGroupItem, DataFormSegmentItem" +
+             "The result must be in JSON format" +
+                "Without additional formatting characters like backticks, newlines, or extra spaces.";
             var typeResponse = await this.semanticKernelService.GetAnswerFromGPT(typePrompt);
+
             var dataFormTypes = JsonConvert.DeserializeObject<Dictionary<string, object>>(typeResponse);
 
             if (this.DataForm != null)
