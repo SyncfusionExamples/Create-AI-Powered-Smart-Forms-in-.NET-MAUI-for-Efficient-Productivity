@@ -415,14 +415,9 @@
         internal async void GetDataFormFromAI(string userPrompt)
         {
             string prompt = $"Given the user's input: {userPrompt}, determine the most appropriate single action to take. " +
-                $"The options are 'Add', 'Remove', 'Replace', 'Insert', 'New Form', 'Change Title', or 'No Change'." +
-                $"If the input suggests adding an element, return 'Add'." +
-                $"If it suggests removing an element, return 'Remove'." +
-                $"If it suggests replacing an element, return 'Replace'." +
-                $"If it suggests inserting an element, return 'Insert'." +
-                $"If a new form needs to be created, return 'New Form'." +
-                $"If only the title needs to be changed, return 'Change Title'. " +
-                $"If no changes are required or if the input is improper or irrelevant, return 'No Change'. Please return only one of these options.";
+                $"The options are 'Add', 'Remove', 'Replace', 'Insert', 'New Form', 'Change Title', or 'No Change'" +
+                " Without additional formatting and special characters like backticks, newlines, or extra spaces.";
+
             var response = await this.semanticKernelService.GetAnswerFromGPT(prompt);
 
             if (string.IsNullOrEmpty(response))
@@ -431,8 +426,6 @@
                 this.DataFormGeneratorModel?.Messages.Add(subjectMessage);
                 UpdateCreateVisibility();
                 UpdateBusyIndicator(false);
-
-
             }
             else
             {
@@ -460,10 +453,11 @@
                     AssistItem subjectMessage = new AssistItem() { Text = "The Data Form title changed successfully...", ShowAssistItemFooter = false };
                     this.DataFormGeneratorModel?.Messages.Add(subjectMessage);
                 }
-                else if (response == "No Change" || response == "")
+                else
                 {
                     AssistItem subjectMessage = new AssistItem() { Text = "Please enter valid inputs.", ShowAssistItemFooter = false };
                     this.DataFormGeneratorModel?.Messages.Add(subjectMessage);
+                    UpdateBusyIndicator(false);
                 }
             }
         }
@@ -474,23 +468,19 @@
         /// <param name="userPrompt">The user prompt.</param>
         private async void GenerateAIDataForm(string userPrompt)
         {
-            string prompt = $"Generate a data form based on the user prompt: {userPrompt}.";
-            string condition = "The result must be in JSON format" +
-                "Property names must be in PascalCase. " +
-                "Must be property names and its value" +
-                "Without additional formatting characters like backticks, newlines, or extra spaces.";
-            var response = await this.semanticKernelService.GetAnswerFromGPT(prompt + condition);
-
-            var openAIJsonData = JsonConvert.DeserializeObject<Dictionary<string, object>>(response);
-
             string dataFormNamePrompt = $"Generate a title for a data form based on the following string: {userPrompt}. The title should clearly reflect the purpose of the data form in general term. Provide only the title, with no additional explanation";
             string getDataFormName = await this.semanticKernelService.GetAnswerFromGPT(dataFormNamePrompt);
             this.DataFormNameLabel!.Text = getDataFormName;
 
-            string typePrompt = $" map {response} each property to the most appropriate DataForm available item type includes: DataFormTextItem , DataFormMultiLineTextItem, DataFormPasswordItem, DataFormNumericItem, DataFormMaskedTextItem, DataFormDateItem, DataFormTimeItem, DataFormCheckBoxItem, DataFormSwitchItem, DataFormPickerItem, DataFormComboBoxItem, DataFormAutoCompleteItem, DataFormRadioGroupItem, DataFormSegmentItem" +
-             "The result must be in JSON format" +
+            string prompt = $"Generate a data form based on the user prompt: {userPrompt}.";
+            string condition = "Property names must be in PascalCase. " +
+                "Must be property names and its value " +
+                "Without additional formatting characters like backticks, newlines, or extra spaces. " +
+                "and map each property to the most appropriate DataForm available item type includes: DataFormTextItem , DataFormMultiLineTextItem, DataFormPasswordItem, DataFormNumericItem, DataFormMaskedTextItem, DataFormDateItem, DataFormTimeItem, DataFormCheckBoxItem, DataFormSwitchItem, DataFormPickerItem, DataFormComboBoxItem, DataFormAutoCompleteItem, DataFormRadioGroupItem, DataFormSegmentItem" +
+                "The result must be in JSON format" +
                 "Without additional formatting characters like backticks, newlines, or extra spaces.";
-            var typeResponse = await this.semanticKernelService.GetAnswerFromGPT(typePrompt);
+
+            var typeResponse = await this.semanticKernelService.GetAnswerFromGPT(prompt + condition);
 
             var dataFormTypes = JsonConvert.DeserializeObject<Dictionary<string, object>>(typeResponse);
 
@@ -529,79 +519,20 @@
         /// <param name="userPrompt">The user prompt.</param>
         private async void EditDataForm(string userPrompt, string action)
         {
-            if (action == "Add" || action == "Remove")
+            if (this.DataForm!.Items != null)
             {
-                string prompt = $"Generate a Property name based on the user prompt: {userPrompt}.";
-                string condition = "The result must be in string" +
-                    "Property name must be in PascalCase. " +
-                    "Without additional formatting characters like backticks, newlines, or extra spaces.";
-                string response = await this.semanticKernelService.GetAnswerFromGPT(prompt + condition);
-
-                if (this.DataForm!.Items != null)
+                if (action == "Add")
                 {
-                    if (action == "Add")
-                    {
-                        string typePrompt = $"Given a string representing user data, map {response} property to the most appropriate DataForm item type. " +
-            $"The available DataForm item types include: DataFormTextItem , DataFormMultiLineTextItem, DataFormPasswordItem, DataFormNumericItem, DataFormMaskedTextItem, DataFormDateItem, DataFormTimeItem, DataFormCheckBoxItem, DataFormSwitchItem, DataFormPickerItem, DataFormComboBoxItem, DataFormAutoCompleteItem, DataFormRadioGroupItem, DataFormSegmentItem" +
-            "without any additional explanations or comments.";
-                        var typeResponse = await this.semanticKernelService.GetAnswerFromGPT(typePrompt);
+                    string prompt = $"Generate a Property name based on the user prompt: {userPrompt}.";
+                    string condition = "The result must be in string" +
+                        "Property name must be in PascalCase. " +
+                        "Without additional formatting characters like backticks, newlines, or extra spaces." +
+                        $" and map that property to the most appropriate DataForm available item type includes: DataFormTextItem , DataFormMultiLineTextItem, DataFormPasswordItem, DataFormNumericItem, DataFormMaskedTextItem, DataFormDateItem, DataFormTimeItem, DataFormCheckBoxItem, DataFormSwitchItem, DataFormPickerItem, DataFormComboBoxItem, DataFormAutoCompleteItem, DataFormRadioGroupItem, DataFormSegmentItem" +
+       "The result must be in JSON format" +
+          "Without additional formatting characters like backticks, newlines, or extra spaces.";
+                    var typeResponse = await this.semanticKernelService.GetAnswerFromGPT(prompt + condition);
 
-                        var dataFormTypes = JsonConvert.DeserializeObject<Dictionary<string, object>>(typeResponse);
-                        if (dataFormTypes != null)
-                        {
-                            if (dataFormTypes != null && dataFormTypes.Count > 0)
-                            {
-                                var newItem = dataFormTypes.FirstOrDefault();
-                                if (newItem.Value != null)
-                                {
-                                    DataFormItem dataFormItem = GenerateDataFormItems(newItem.Value.ToString(), newItem.Key);
-                                    if (dataFormItem != null)
-                                    {
-                                        this.DataForm.Items.Add(dataFormItem);
-                                        UpdateChangesResponse();
-                                    }
-
-                                }
-                            }
-                        }
-                    }
-                    else if (action == "Remove")
-                    {
-                        var removeItem = this.DataForm!.Items.FirstOrDefault(x => x != null && (x as DataFormItem).FieldName == response);
-                        if (removeItem != null)
-                        {
-                            this.DataForm.Items.Remove(removeItem);
-                            UpdateChangesResponse();
-                        }
-                    }
-                }
-            }
-            else if (action == "Replace")
-            {
-                string prompt = $"Generate a Property names based on the user prompt: {userPrompt}. in order of replace result ";
-                string condition = "The result must be in List<string>" +
-                    "Property names must be in PascalCase. " +
-                    "Without additional formatting characters like backticks, newlines, or extra spaces.";
-                string response = await this.semanticKernelService.GetAnswerFromGPT(prompt + condition);
-
-                List<string> propertyNames = JsonConvert.DeserializeObject<List<string>>(response);
-
-                if (propertyNames != null && propertyNames.Count > 0)
-                {
-                    string prompt1 = $"Generate a Property name based on the user prompt: {userPrompt}. ";
-                    string condition1 = "The result must be in string" +
-                       "Property names must be in PascalCase. " +
-                       "Without additional formatting characters like backticks, newlines, or extra spaces.";
-                    string response1 = await this.semanticKernelService.GetAnswerFromGPT(prompt1 + condition1);
-
-                    int index = propertyNames.IndexOf(response1);
-
-                    string typePrompt = $"Given a string representing user data, map {response1} property to the most appropriate DataForm item type. " +
-              $"The available DataForm item types include: DataFormTextItem , DataFormMultiLineTextItem, DataFormPasswordItem, DataFormNumericItem, DataFormMaskedTextItem, DataFormDateItem, DataFormTimeItem, DataFormCheckBoxItem, DataFormSwitchItem, DataFormPickerItem, DataFormComboBoxItem, DataFormAutoCompleteItem, DataFormRadioGroupItem, DataFormSegmentItem" +
-              "without any additional explanations or comments.";
-                    var typeResponse = await this.semanticKernelService.GetAnswerFromGPT(typePrompt);
                     var dataFormTypes = JsonConvert.DeserializeObject<Dictionary<string, object>>(typeResponse);
-
                     if (dataFormTypes != null)
                     {
                         if (dataFormTypes != null && dataFormTypes.Count > 0)
@@ -609,8 +540,67 @@
                             var newItem = dataFormTypes.FirstOrDefault();
                             if (newItem.Value != null)
                             {
-                                this.DataForm.Items[index] = GenerateDataFormItems(newItem.Value.ToString(), newItem.Key);
-                                UpdateChangesResponse();
+                                DataFormItem dataFormItem = GenerateDataFormItems(newItem.Value.ToString(), newItem.Key);
+                                if (dataFormItem != null)
+                                {
+                                    this.DataForm.Items.Add(dataFormItem);
+                                    UpdateChangesResponse();
+                                }
+
+                            }
+                        }
+                    }
+                }
+                else if (action == "Remove")
+                {
+                    string prompt = $"Generate a Property name based on the user prompt: {userPrompt}.";
+                    string condition = "The result must be in string" +
+                        "Property name must be in PascalCase. " +
+                        "Without additional formatting characters like backticks, newlines, or extra spaces.";
+                    string response = await this.semanticKernelService.GetAnswerFromGPT(prompt + condition);
+
+                    var removeItem = this.DataForm!.Items.FirstOrDefault(x => x != null && (x as DataFormItem).FieldName == response);
+                    if (removeItem != null)
+                    {
+                        this.DataForm.Items.Remove(removeItem);
+                        UpdateChangesResponse();
+                    }
+                }
+                else if (action == "Replace")
+                {
+                    string pattern = @"Replace\s+(.*?)\s+(with|by|to)\s+(.*)";
+                    Match match = Regex.Match(userPrompt, pattern, RegexOptions.IgnoreCase);
+
+                    if (match.Success && match.Groups.Count == 4)
+                    {
+                        string prompt = $"Generate a Property name from {match.Groups[1].Value.Trim()}.";
+                        string condition = "The result must be in JSON string" +
+                            "Property name must be in PascalCase. " +
+                            "Without additional formatting characters like backticks, newlines, or extra spaces.";
+                        string response = await this.semanticKernelService.GetAnswerFromGPT(prompt + condition);
+
+                        string prompt1 = $"Generate a Property name from {match.Groups[3].Value.Trim()}.";
+                        string condition1 = "The result must be in string and Property name must be in PascalCase." +
+                           "Without additional formatting characters like backticks, newlines, or extra spaces." +
+                           " map that generated property to the most appropriate DataForm available item type includes: DataFormTextItem , DataFormMultiLineTextItem, DataFormPasswordItem, DataFormNumericItem, DataFormMaskedTextItem, DataFormDateItem, DataFormTimeItem, DataFormCheckBoxItem, DataFormSwitchItem, DataFormPickerItem, DataFormComboBoxItem, DataFormAutoCompleteItem, DataFormRadioGroupItem, DataFormSegmentItem" +
+                           "The result must be in JSON format" +
+                           "without extra formatting like backticks, newlines, or special characters.";
+                        var typeResponse = await this.semanticKernelService.GetAnswerFromGPT(prompt1 + condition1);
+
+                        var dataFormTypes = JsonConvert.DeserializeObject<Dictionary<string, object>>(typeResponse);
+
+                        if (dataFormTypes != null && !string.IsNullOrEmpty(response))
+                        {
+                            if (dataFormTypes != null && dataFormTypes.Count > 0)
+                            {
+                                var newItem = dataFormTypes.FirstOrDefault();
+                                var removeItem = this.DataForm.Items.FirstOrDefault(x => (x as DataFormItem).FieldName == response);
+                                if (removeItem != null && newItem.Value != null)
+                                {
+                                    int index = DataForm.Items.IndexOf(removeItem);
+                                    this.DataForm.Items[index] = GenerateDataFormItems(newItem.Value.ToString(), newItem.Key);
+                                    UpdateChangesResponse();
+                                }
                             }
                         }
                     }
