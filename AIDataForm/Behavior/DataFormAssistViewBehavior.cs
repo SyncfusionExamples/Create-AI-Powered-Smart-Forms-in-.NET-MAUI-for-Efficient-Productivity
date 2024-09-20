@@ -104,6 +104,11 @@
         public SfButton? AIActionButton { get; set; }
 
         /// <summary>
+        /// Gets or sets the close button.
+        /// </summary>
+        public Button? CloseButton { get; set; }
+
+        /// <summary>
         /// Gets or sets the AI pop up window.
         /// </summary>
         public SfPopup? AIPopupWindow { get; set; }
@@ -127,10 +132,20 @@
                 this.CreateButton.Clicked += this.OnCreateButtonClicked;
             }
 
+            if(this.CloseButton != null)
+            {
+                this.CloseButton.Clicked += CloseButton_Clicked;
+            }
+
             if (this.AIActionButton != null)
             {
                 this.AIActionButton.Clicked += this.OnAIActionButtonClicked;
             }
+        }
+
+        private void CloseButton_Clicked(object? sender, EventArgs e)
+        {
+            this.DataFormGeneratorModel.ShowAssistView = false;
         }
 
         /// <summary>
@@ -140,7 +155,7 @@
         /// <param name="e">The event args.</param>
         private void OnAIActionButtonClicked(object? sender, EventArgs e)
         {
-            this.AIPopupWindow!.IsOpen = true;
+            this.DataFormGeneratorModel.ShowAssistView = true;
         }
 
         /// <summary>

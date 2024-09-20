@@ -9,7 +9,7 @@
     public class DataFormGeneratorModel : INotifyPropertyChanged
     {
 
-        private bool showDataForm;
+        private bool showDataForm , showAssistView;
 
         /// <summary>
         /// Gets or sets the collection of messages of a conversation.
@@ -28,6 +28,17 @@
                 RaisePropertyChanged(nameof(this.ShowDataForm));
             }
         }
+
+        public bool ShowAssistView
+        {
+            get { return this.showAssistView; }
+            set
+            {
+                this.showAssistView = value;
+                RaisePropertyChanged(nameof(this.ShowAssistView));
+            }
+        }
+
 
         /// <summary>
         /// Property changed handler.
