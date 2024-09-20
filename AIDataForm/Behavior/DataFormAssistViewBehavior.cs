@@ -116,7 +116,7 @@
         {
             base.OnAttachedTo(bindable);
             this.assistView = bindable;
-
+          
             if (this.assistView != null)
             {
                 this.assistView.Request += this.OnAssistViewRequest;
@@ -523,9 +523,10 @@
             {
                 if (action == "Add")
                 {
+                    userPrompt = userPrompt.Replace("add", "", StringComparison.OrdinalIgnoreCase).Trim();
                     string prompt = $"Generate a Property name based on the user prompt: {userPrompt}.";
                     string condition = "The result must be in string" +
-                        "Property name must be in PascalCase. " +
+                        "Property name must be in PascalCase, without asking questions, or including extra explanations. " +
                         "Without additional formatting characters like backticks, newlines, or extra spaces." +
                         $" and map that property to the most appropriate DataForm available item type includes: DataFormTextItem , DataFormMultiLineTextItem, DataFormPasswordItem, DataFormNumericItem, DataFormMaskedTextItem, DataFormDateItem, DataFormTimeItem, DataFormCheckBoxItem, DataFormSwitchItem, DataFormPickerItem, DataFormComboBoxItem, DataFormAutoCompleteItem, DataFormRadioGroupItem, DataFormSegmentItem" +
        "The result must be in JSON format" +
@@ -553,9 +554,10 @@
                 }
                 else if (action == "Remove")
                 {
+                    userPrompt = userPrompt.Replace("remove", "", StringComparison.OrdinalIgnoreCase).Trim();
                     string prompt = $"Generate a Property name based on the user prompt: {userPrompt}.";
                     string condition = "The result must be in string" +
-                        "Property name must be in PascalCase. " +
+                        "Property name must be in PascalCase, without asking questions, or including extra explanations. " +
                         "Without additional formatting characters like backticks, newlines, or extra spaces.";
                     string response = await this.semanticKernelService.GetAnswerFromGPT(prompt + condition);
 
@@ -573,14 +575,15 @@
 
                     if (match.Success && match.Groups.Count == 4)
                     {
-                        string prompt = $"Generate a Property name from {match.Groups[1].Value.Trim()}.";
-                        string condition = "The result must be in JSON string" +
-                            "Property name must be in PascalCase. " +
-                            "Without additional formatting characters like backticks, newlines, or extra spaces.";
+                        string prompt = $"Based on the user input '{match.Groups[1].Value.Trim()}', generate a Property name.";
+                        string condition = "The result must be a valid Property name in PascalCase format. " +
+                                           "Do not include explanations, questions, or additional characters like backticks, newlines, or spaces. " +
+                                           "Return only the Property name in PascalCase.";
+
                         string response = await this.semanticKernelService.GetAnswerFromGPT(prompt + condition);
 
                         string prompt1 = $"Generate a Property name from {match.Groups[3].Value.Trim()}.";
-                        string condition1 = "The result must be in string and Property name must be in PascalCase." +
+                        string condition1 = "The result must be in string and Property name must be in PascalCase,  without asking questions, or including extra explanations. " +
                            "Without additional formatting characters like backticks, newlines, or extra spaces." +
                            " map that generated property to the most appropriate DataForm available item type includes: DataFormTextItem , DataFormMultiLineTextItem, DataFormPasswordItem, DataFormNumericItem, DataFormMaskedTextItem, DataFormDateItem, DataFormTimeItem, DataFormCheckBoxItem, DataFormSwitchItem, DataFormPickerItem, DataFormComboBoxItem, DataFormAutoCompleteItem, DataFormRadioGroupItem, DataFormSegmentItem" +
                            "The result must be in JSON format" +
