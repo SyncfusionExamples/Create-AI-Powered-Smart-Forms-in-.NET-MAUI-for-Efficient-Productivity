@@ -91,8 +91,6 @@
         /// </summary>
         public Editor? Entry { get; set; }
 
-        public Label? DescribeLabel { get; set; }
-
         /// <summary>
         /// Gets or sets the create button.
         /// </summary>
@@ -107,11 +105,6 @@
         /// Gets or sets the close button.
         /// </summary>
         public Button? CloseButton { get; set; }
-
-        /// <summary>
-        /// Gets or sets the AI pop up window.
-        /// </summary>
-        public SfPopup? AIPopupWindow { get; set; }
 
         /// <summary>
         /// On attached method.
@@ -198,11 +191,9 @@
             {
                 UpdateCreateVisibility();
                 UpdateBusyIndicator(false);
-
-                AssistItem subjectMessage = new AssistItem() { Text = "You are in offline mode...", ShowAssistItemFooter = false };
-                this.DataFormGeneratorModel?.Messages.Add(subjectMessage);
+             
                 AssistItemSuggestion assistItemSuggestion = this.GetSubjectSuggestion();
-                AssistItem assistItem = new AssistItem() { Text = "Please select any of form below...", Suggestion = assistItemSuggestion, ShowAssistItemFooter = false };
+                AssistItem assistItem = new AssistItem() { Text = "You are in offline mode. Please select one of the forms below.", Suggestion = assistItemSuggestion, ShowAssistItemFooter = false };
                 this.DataFormGeneratorModel!.Messages.Add(assistItem);
             }
         }
@@ -217,6 +208,7 @@
             string requestText = e.RequestItem.Text;
             if (SemanticKernelService.IsCredentialValid)
             {
+                this.DataFormGeneratorModel.ShowOfflineLabel = false;
                 this.GetDataFormFromAI(requestText);
                 return;
             }
@@ -311,7 +303,8 @@
                 new DataFormTextItem() { FieldName = "ZipCode" }
             };
             this.DataForm!.Items = dataFormViewItems;
-
+            this.DataFormGeneratorModel.ShowSubmitButton = true;
+            this.DataFormGeneratorModel.ShowOfflineLabel = false;
 
         }
 
@@ -327,7 +320,8 @@
                 new DataFormMultilineItem() { FieldName = "Comments" },
             };
             this.DataForm!.Items = dataFormViewItems;
-
+            this.DataFormGeneratorModel.ShowSubmitButton = true;
+            this.DataFormGeneratorModel.ShowOfflineLabel = false;
         }
 
         private void UpdateBusyIndicator(bool value)
@@ -521,11 +515,10 @@
 
         private void UpdateCreateVisibility()
         {
-            this.Entry.IsVisible = false;
-            this.DescribeLabel.IsVisible = false;
-            this.CreateButton.IsVisible = false;
+            this.DataFormGeneratorModel.ShowInputView = false;
             this.DataFormGeneratorModel.ShowDataForm = true;
 
+         
         }
 
         /// <summary>

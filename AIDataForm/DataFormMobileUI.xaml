@@ -14,7 +14,6 @@
         <Grid.BindingContext>
             <local:DataFormGeneratorModel x:Name="dataFormGeneratorModel" />
         </Grid.BindingContext>
-
         <buttons:SfButton x:Name="aiActionButton" IsVisible="{Binding ShowDataForm}" 
      CornerRadius="5" 
      Text="AI"
@@ -29,7 +28,7 @@
      AbsoluteLayout.LayoutBounds="0.98, 0.95, 50, 50"
      AbsoluteLayout.LayoutFlags="PositionProportional"
    />
-        <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" WidthRequest="500">
+        <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" IsVisible="{Binding ShowInputView}" WidthRequest="500">
             <Label x:Name="describeLabel" Text="Create AI-Powered Smart Forms in .NET MAUI for Efficient Productivity." FontSize="Medium" FontAttributes="Bold" />
             <Grid ColumnDefinitions="Auto,Auto" Margin="0,20,0,0" ColumnSpacing="5">
                 <Editor x:Name="entry" Grid.Column="0" VerticalOptions="Center" HorizontalOptions="Center" WidthRequest="300" HeightRequest="50" Placeholder="Create your own form"/>
@@ -51,9 +50,12 @@
                         <RowDefinition Height="75"/>
                     </Grid.RowDefinitions>
 
-                    <Label x:Name="dataFormNameLabel" Text="Your form renders here..." TextColor="{DynamicResource SfDataFormNormalEditorTextColor}" FontSize="Subtitle" 
+                    <Label x:Name="dataFormNameLabel" Text="Your Data Form Renders Here." TextColor="{DynamicResource SfDataFormNormalEditorTextColor}" FontSize="Subtitle" 
                              FontAttributes="Bold" VerticalTextAlignment="Center"
                              HorizontalTextAlignment="Center"/>
+
+                    <Label  Grid.Row="1" IsVisible="{Binding ShowOfflineLabel}" VerticalTextAlignment="Center" Text="The Azure API key or endpoint is missing or incorrect. Please verify your credentials. Alternatively, you can continue using offline data. Click the AI button to assist with offline data form creation."/>
+
                     <dataform:SfDataForm x:Name="dataForm"
                                            Grid.RowSpan="1"
                                            Grid.Row="1" AutoGenerateItems="False"
@@ -66,7 +68,7 @@
                         </dataform:SfDataForm.TextInputLayoutSettings>
                     </dataform:SfDataForm>
                     <Line Grid.Row="2" Background="#F5F5F5" />
-                    <Button x:Name="submitButton"  Grid.Row="4" Text="Save" 
+                    <Button x:Name="submitButton" IsVisible="{Binding ShowSubmitButton}"  Grid.Row="4" Text="Save" 
                               Background="{DynamicResource SfDataFormFocusedEditorStroke}"
                               CornerRadius="20"
                               FontSize="16"
@@ -127,7 +129,8 @@
                              AssistItems="{Binding Messages}">
 
                         <aiassistview:SfAIAssistView.Behaviors>
-                            <local:DataFormAssistViewBehavior x:Name="dataFormAssistViewModel" AIActionButton="{x:Reference aiActionButton}" CloseButton="{x:Reference CloseButton}" DescribeLabel="{x:Reference describeLabel}" DataFormNameLabel="{x:Reference dataFormNameLabel}" BusyIndicator="{x:Reference busyIndicator}"  DataForm="{x:Reference dataForm}"  DataFormGeneratorModel="{x:Reference dataFormGeneratorModel}" Entry="{x:Reference entry}" CreateButton="{x:Reference createButton}"/>
+                            <local:DataFormAssistViewBehavior x:Name="dataFormAssistViewModel" AIActionButton="{x:Reference aiActionButton}" CloseButton="{x:Reference CloseButton}"
+                                                               DataFormNameLabel="{x:Reference dataFormNameLabel}" BusyIndicator="{x:Reference busyIndicator}"  DataForm="{x:Reference dataForm}"  DataFormGeneratorModel="{x:Reference dataFormGeneratorModel}" Entry="{x:Reference entry}" CreateButton="{x:Reference createButton}"/>
                         </aiassistview:SfAIAssistView.Behaviors>
                     </aiassistview:SfAIAssistView>
                 </VerticalStackLayout>

@@ -9,7 +9,7 @@
     public class DataFormGeneratorModel : INotifyPropertyChanged
     {
 
-        private bool showDataForm , showAssistView;
+        private bool showDataForm , showAssistView, showSubmitButton, showInputView = true , showOfflineLabel = true;
 
         /// <summary>
         /// Gets or sets the collection of messages of a conversation.
@@ -39,6 +39,35 @@
             }
         }
 
+        public bool ShowInputView
+        {
+            get { return this.showInputView; }
+            set
+            {
+                this.showInputView = value;
+                RaisePropertyChanged(nameof(this.ShowInputView));
+            }
+        }
+
+        public bool ShowSubmitButton
+        {
+            get { return this.showSubmitButton; }
+            set
+            {
+                this.showSubmitButton = value;
+                RaisePropertyChanged(nameof(this.ShowSubmitButton));
+            }
+        }
+
+        public bool ShowOfflineLabel
+        {
+            get { return this.showOfflineLabel; }
+            set
+            {
+                this.showOfflineLabel = value;
+                RaisePropertyChanged(nameof(this.ShowOfflineLabel));
+            }
+        }
 
         /// <summary>
         /// Property changed handler.
