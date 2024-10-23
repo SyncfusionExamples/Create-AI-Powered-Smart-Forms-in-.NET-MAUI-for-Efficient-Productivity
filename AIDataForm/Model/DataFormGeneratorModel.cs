@@ -1,5 +1,6 @@
 ﻿namespace AIDataForm
 {
+    using Syncfusion.Maui.AIAssistView;
     using System.Collections.ObjectModel;
     using System.ComponentModel;
 
@@ -8,13 +9,18 @@
     /// </summary>
     public class DataFormGeneratorModel : INotifyPropertyChanged
     {
-
-        private bool showDataForm , showAssistView, showSubmitButton, showInputView = true , showOfflineLabel = true;
-
+        private bool showDataForm , showAssistView, showSubmitButton, showInputView, showOfflineLabel;
+       
+        public DataFormGeneratorModel()
+        {
+            showInputView = true;
+            showOfflineLabel = true;
+        }
         /// <summary>
         /// Gets or sets the collection of messages of a conversation.
         /// </summary>
-        public ObservableCollection<object> Messages { get; set; } = new ObservableCollection<object>();
+        public ObservableCollection<IAssistItem> Messages { get; set; } = new ObservableCollection<IAssistItem>();
+       
 
         /// <summary>
         /// Gets or sets the show header.
