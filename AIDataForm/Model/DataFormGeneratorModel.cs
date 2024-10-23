@@ -21,7 +21,6 @@
         /// </summary>
         public ObservableCollection<IAssistItem> Messages { get; set; } = new ObservableCollection<IAssistItem>();
        
-
         /// <summary>
         /// Gets or sets the show header.
         /// </summary>
