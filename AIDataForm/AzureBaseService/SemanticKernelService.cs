@@ -152,7 +152,6 @@
 
             if (!isValidUri || !endpoint.Contains("http") || string.IsNullOrEmpty(key) || key.Contains("API key") || string.IsNullOrEmpty(deploymentName) || deploymentName.Contains("deployment name") || string.IsNullOrEmpty(imageDeploymentName))
             {
-                ShowAlertAsync();
                 return;
             }
             try
@@ -167,7 +166,6 @@
             catch (Exception)
             {
                 // Handle any exceptions that indicate the credentials or endpoint are invalid.               
-                ShowAlertAsync();
                 return;
             }
             IsCredentialValid = true;
@@ -213,18 +211,6 @@
         }
 
         #endregion
-
-        /// <summary>
-        /// Show Alert Popup
-        /// </summary>
-        private async void ShowAlertAsync()
-        {
-            if (Application.Current?.MainPage != null && !IsCredentialValid)
-            {
-                isAlreadyValidated = true;
-                await Application.Current.MainPage.DisplayAlert("Alert", "The Azure API key or endpoint is missing or incorrect. Please verify your credentials. You can also continue with the offline data.", "OK");
-            }
-        }
 
         /// <summary>
         /// Retrieves an answer from the deployment name model using the provided user prompt.

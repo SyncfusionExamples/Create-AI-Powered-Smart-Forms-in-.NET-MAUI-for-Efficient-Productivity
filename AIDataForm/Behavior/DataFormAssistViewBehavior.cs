@@ -90,6 +90,8 @@
         /// </summary>
         public Editor? Entry { get; set; }
 
+        public Button RefreshButton { get; set; }
+
         /// <summary>
         /// Gets or sets the create button.
         /// </summary>
@@ -129,10 +131,20 @@
                 this.CloseButton.Clicked += CloseButton_Clicked;
             }
 
+            if (this.RefreshButton != null)
+            {
+                this.RefreshButton.Clicked += RefreshButton_Clicked; ;
+            }
+
             if (this.AIActionButton != null)
             {
                 this.AIActionButton.Clicked += this.OnAIActionButtonClicked;
             }
+        }
+
+        private void RefreshButton_Clicked(object? sender, EventArgs e)
+        {
+            this.DataFormGeneratorModel.Messages.Clear();
         }
 
         private void CloseButton_Clicked(object? sender, EventArgs e)
@@ -606,34 +618,10 @@
                         }
                     }
                 }
-                else if (action == "PlaceholderText")
-                {
-                    string prompt = $"Generate a Property name and a Placeholder text based on the user prompt: {userPrompt}." +
-                 " Output the result in the exact format: 'PropertyName: [PropertyName], PlaceholderText: [PlaceholderText]'.";
-
-                    string condition = "The PropertyName must be in PascalCase, without extra questions, explanations, or formatting characters.";
-                    string response = await this.semanticKernelService.GetAnswerFromGPT(prompt + condition);
-
-                    if (response != null)
-                    {
-                        var match = Regex.Match(response, @"PropertyName: (?<propertyName>[^,]+), PlaceholderText: (?<placeholderText>.+)");
-                        if (match.Success)
-                        {
-                            string propertyName = match.Groups["propertyName"].Value.Trim();
-                            string placeholderText = match.Groups["placeholderText"].Value.Trim();
-
-                            DataFormItem placeholderTextItem = this.DataForm!.Items.FirstOrDefault(x => x != null && (x as DataFormItem).FieldName == response) as DataFormItem;
-                            if (placeholderTextItem != null)
-                            {
-                                placeholderTextItem.PlaceholderText = placeholderText;
-                            }
-                        }
-                    }
-                }
                 else if (action == "Add Values" || action == "Add Value")
                 {
-                    string prompt = $"Generate a Property name and a Placeholder text based on the user prompt: {userPrompt}." +
-                 " Output the result in the exact format: 'PropertyName: [PropertyName], Values: [value1, value2, ...]'.";
+                    string prompt = $"Generate a Property name and a Values based on the user prompt: {userPrompt}." +
+                 " Output the result in the exact format: 'PropertyName: PropertyName, Values: value1, value2, ...'.";
 
                     string condition = "The PropertyName must be in PascalCase, without extra questions, explanations, or formatting characters.";
                     string response = await this.semanticKernelService.GetAnswerFromGPT(prompt + condition);
