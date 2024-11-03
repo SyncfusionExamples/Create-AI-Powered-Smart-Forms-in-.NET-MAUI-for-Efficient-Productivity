@@ -8,7 +8,6 @@
     using Newtonsoft.Json;
     using Syncfusion.Maui.DataForm;
     using Syncfusion.Maui.Buttons;
-    using Syncfusion.Maui.Popup;
     using System.Text.RegularExpressions;
 
     /// <summary>
@@ -114,7 +113,7 @@
         {
             base.OnAttachedTo(bindable);
             this.assistView = bindable;
-          
+
             if (this.assistView != null)
             {
                 this.assistView.Request += this.OnAssistViewRequest;
@@ -125,7 +124,7 @@
                 this.CreateButton.Clicked += this.OnCreateButtonClicked;
             }
 
-            if(this.CloseButton != null)
+            if (this.CloseButton != null)
             {
                 this.CloseButton.Clicked += CloseButton_Clicked;
             }
@@ -191,7 +190,7 @@
             {
                 UpdateCreateVisibility();
                 UpdateBusyIndicator(false);
-             
+
                 AssistItemSuggestion assistItemSuggestion = this.GetSubjectSuggestion();
                 AssistItem assistItem = new AssistItem() { Text = "You are in offline mode. Please select one of the forms below.", Suggestion = assistItemSuggestion, ShowAssistItemFooter = false };
                 this.DataFormGeneratorModel!.Messages.Add(assistItem);
@@ -424,7 +423,7 @@
         internal async void GetDataFormFromAI(string userPrompt)
         {
             string prompt = $"Given the user's input: {userPrompt}, determine the most appropriate single action to take. " +
-                $"The options are 'Add', 'Remove', 'Replace', 'Insert', 'New Form', 'Change Title', or 'No Change'" +
+                $"The options are 'Add', 'Add Values','PlaceholderText' ,'Remove', 'Replace', 'Insert', 'New Form', 'Change Title', or 'No Change'" +
                 " Without additional formatting and special characters like backticks, newlines, or extra spaces.";
 
             var response = await this.semanticKernelService.GetAnswerFromGPT(prompt);
@@ -438,17 +437,10 @@
             }
             else
             {
-                if (response == "Add")
+                if(response == string.Empty)
                 {
-                    this.EditDataForm(userPrompt, "Add");
-                }
-                else if (response == "Remove")
-                {
-                    this.EditDataForm(userPrompt, "Remove");
-                }
-                else if (response == "Replace")
-                {
-                    this.EditDataForm(userPrompt, "Replace");
+                    UpdateBusyIndicator(false);
+                    await App.Current.MainPage.DisplayAlert("", "Please enter valid inputs.", "OK");
                 }
                 else if (response == "New Form")
                 {
@@ -463,10 +455,9 @@
                     AssistItem subjectMessage = new AssistItem() { Text = "The Data Form title changed successfully...", ShowAssistItemFooter = false };
                     this.DataFormGeneratorModel?.Messages.Add(subjectMessage);
                 }
-                else
+                else 
                 {
-                    UpdateBusyIndicator(false);
-                    await App.Current.MainPage.DisplayAlert("", "Please enter valid inputs.", "OK");
+                    this.EditDataForm(userPrompt, response);
                 }
             }
         }
@@ -518,7 +509,7 @@
             this.DataFormGeneratorModel.ShowInputView = false;
             this.DataFormGeneratorModel.ShowDataForm = true;
 
-         
+
         }
 
         /// <summary>
@@ -529,9 +520,9 @@
         {
             if (this.DataForm!.Items != null)
             {
+                userPrompt = userPrompt.Replace(action, "", StringComparison.OrdinalIgnoreCase).Trim();
                 if (action == "Add")
                 {
-                    userPrompt = userPrompt.Replace("add", "", StringComparison.OrdinalIgnoreCase).Trim();
                     string prompt = $"Generate a Property name based on the user prompt: {userPrompt}.";
                     string condition = "The result must be in string" +
                         "Property name must be in PascalCase, without asking questions, or including extra explanations. " +
@@ -562,7 +553,6 @@
                 }
                 else if (action == "Remove")
                 {
-                    userPrompt = userPrompt.Replace("remove", "", StringComparison.OrdinalIgnoreCase).Trim();
                     string prompt = $"Generate a Property name based on the user prompt: {userPrompt}.";
                     string condition = "The result must be in string" +
                         "Property name must be in PascalCase, without asking questions, or including extra explanations. " +
@@ -612,6 +602,60 @@
                                     this.DataForm.Items[index] = GenerateDataFormItems(newItem.Value.ToString(), newItem.Key);
                                     UpdateChangesResponse();
                                 }
+                            }
+                        }
+                    }
+                }
+                else if (action == "PlaceholderText")
+                {
+                    string prompt = $"Generate a Property name and a Placeholder text based on the user prompt: {userPrompt}." +
+                 " Output the result in the exact format: 'PropertyName: [PropertyName], PlaceholderText: [PlaceholderText]'.";
+
+                    string condition = "The PropertyName must be in PascalCase, without extra questions, explanations, or formatting characters.";
+                    string response = await this.semanticKernelService.GetAnswerFromGPT(prompt + condition);
+
+                    if (response != null)
+                    {
+                        var match = Regex.Match(response, @"PropertyName: (?<propertyName>[^,]+), PlaceholderText: (?<placeholderText>.+)");
+                        if (match.Success)
+                        {
+                            string propertyName = match.Groups["propertyName"].Value.Trim();
+                            string placeholderText = match.Groups["placeholderText"].Value.Trim();
+
+                            DataFormItem placeholderTextItem = this.DataForm!.Items.FirstOrDefault(x => x != null && (x as DataFormItem).FieldName == response) as DataFormItem;
+                            if (placeholderTextItem != null)
+                            {
+                                placeholderTextItem.PlaceholderText = placeholderText;
+                            }
+                        }
+                    }
+                }
+                else if (action == "Add Values" || action == "Add Value")
+                {
+                    string prompt = $"Generate a Property name and a Placeholder text based on the user prompt: {userPrompt}." +
+                 " Output the result in the exact format: 'PropertyName: [PropertyName], Values: [value1, value2, ...]'.";
+
+                    string condition = "The PropertyName must be in PascalCase, without extra questions, explanations, or formatting characters.";
+                    string response = await this.semanticKernelService.GetAnswerFromGPT(prompt + condition);
+
+                    if (response != null)
+                    {
+                        var match = Regex.Match(response, @"PropertyName: (?<propertyName>[^,]+), Values: (?<values>.+)");
+                        if (match.Success)
+                        {
+                            string propertyName = match.Groups["propertyName"].Value.Trim();
+                            string values = match.Groups["values"].Value.Trim();
+
+                            List<string> itemsSource = match.Groups["values"].Value
+                                 .Split(',')
+                                 .Select(v => v.Trim())
+                                 .ToList();
+
+                            var removeItem = this.DataForm!.Items.FirstOrDefault(x => x != null && (x as DataFormItem).FieldName.Equals(propertyName));
+                            if (removeItem != null && removeItem is DataFormListItem pickerItem)
+                            {
+                                pickerItem.ItemsSource = itemsSource;
+                                UpdateChangesResponse();
                             }
                         }
                     }
