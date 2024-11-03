@@ -452,6 +452,7 @@
                 }
                 else if (response == "New Form")
                 {
+                    this.DataFormGeneratorModel.ShowOfflineLabel = false;
                     this.GenerateAIDataForm(userPrompt);
                 }
                 else if (response == "Change Title")
@@ -464,9 +465,8 @@
                 }
                 else
                 {
-                    AssistItem subjectMessage = new AssistItem() { Text = "Please enter valid inputs.", ShowAssistItemFooter = false };
-                    this.DataFormGeneratorModel?.Messages.Add(subjectMessage);
                     UpdateBusyIndicator(false);
+                    await App.Current.MainPage.DisplayAlert("", "Please enter valid inputs.", "OK");
                 }
             }
         }
