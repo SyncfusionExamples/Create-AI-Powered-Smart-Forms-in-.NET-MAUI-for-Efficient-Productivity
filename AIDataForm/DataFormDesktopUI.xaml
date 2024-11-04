@@ -12,22 +12,23 @@
         <Grid.BindingContext>
             <local:DataFormGeneratorModel x:Name="dataFormGeneratorModel" />
         </Grid.BindingContext>
+
         <Image Source="feedbackform.png" Aspect="Fill"/>
+
         <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" IsVisible="{Binding ShowInputView}" WidthRequest="500">
             <Label x:Name="describeLabel" Text="Create AI-Powered Smart Forms in .NET MAUI for Efficient Productivity." FontSize="Medium" FontAttributes="Bold" />
             <Grid ColumnDefinitions="Auto,Auto" Margin="0,20,0,0" ColumnSpacing="5">
-                <Editor x:Name="entry" PlaceholderColor="Gray" Grid.Column="0"  VerticalOptions="Center" HorizontalOptions="Center" WidthRequest="300" Placeholder="Create your own data form"/>
-                <Button x:Name="createButton" Grid.Column="1" CornerRadius="5" Text="Create" HeightRequest="40" VerticalOptions="Center" HorizontalOptions="End"/>
+                <Editor AutoSize="TextChanges" x:Name="entry" PlaceholderColor="Gray" Grid.Column="0"  VerticalOptions="Center" HorizontalOptions="Center" WidthRequest="300" Placeholder="Create your own data form"/>
+                <Button x:Name="createButton" Grid.Column="1"  CornerRadius="10" Text="Create"  VerticalOptions="Center" HorizontalOptions="End"/>
             </Grid>
         </VerticalStackLayout>
 
-        <Grid x:Name="mainGrid" IsVisible="{Binding ShowDataForm}" ColumnDefinitions="*,*"  HorizontalOptions="Center">
-
+        <Grid x:Name="mainGrid" IsVisible="{Binding ShowDataForm}" ColumnDefinitions="*,*" HorizontalOptions="Center">
             <Grid Grid.Column="0" HeightRequest="450"  >
                 <Frame HasShadow="False" 
                         CornerRadius="10"
                         WidthRequest="450" Padding="10" Margin="0,0,25,0">
-                    <Grid >
+                    <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="40"/>
                             <RowDefinition Height="0.8*"/>
@@ -63,30 +64,77 @@
 
             <Border x:Name="headerView" HeightRequest="450" Background="White"  StrokeShape="RoundRectangle 10"
                        HorizontalOptions="Center"  Grid.Column="1" >
-                <VerticalStackLayout >
-                    <Label Text="AI Assistant"  VerticalTextAlignment="Center" HorizontalTextAlignment="Center"
-FontSize="16" HorizontalOptions="Center" HeightRequest="40"
-FontFamily="Roboto-Medium" 
-FontAttributes="Bold"
-VerticalOptions="Center"  />
-                    <BoxView Grid.Row="1" HeightRequest="1" BackgroundColor="{AppThemeBinding Light=#CAC4D0, Dark=#CAC4D0}"/>
-                    <aiassistview:SfAIAssistView Grid.Row="2" x:Name="aiAssistView" WidthRequest="300" HeightRequest="420" VerticalOptions="End"
+                <VerticalStackLayout>
+                    <Grid RowDefinitions="auto,auto" Background="#F7F2FB" >
+                        <Grid ColumnDefinitions="auto,*" >
+                            <Label Text="AI Assistant" 
+                           Grid.Column="0" 
+                           FontSize="16" 
+                           FontFamily="Roboto-Medium" 
+                           Padding="16,0,0,0"  VerticalTextAlignment="Center"
+                           FontAttributes="Bold"
+                           VerticalOptions="Center"/>
+                            <Button x:Name="refreshButton"
+                            Grid.Column="1"
+                            CornerRadius="30"
+                            HeightRequest="30"
+                            WidthRequest="30"
+                            FontSize="15"
+                            Text="&#xe72b;" 
+                            BackgroundColor="#f7f2fb"
+                            TextColor="#99000000"
+                            HorizontalOptions="End"
+                            FontFamily="MauiSampleFontIcon"
+                            ToolTipProperties.Text="Refresh"
+                            Padding="0">
+                                <VisualStateManager.VisualStateGroups>
+                                    <VisualStateGroupList>
+                                        <VisualStateGroup x:Name="CommonStates">
+                                            <VisualState x:Name="Normal">
+                                                <VisualState.Setters>
+                                                    <Setter Property="BackgroundColor"
+                                        Value="Transparent" />
+                                                    <Setter Property="Opacity"
+                                        Value="1" />
+                                                </VisualState.Setters>
+                                            </VisualState>
+                                            <VisualState x:Name="Pressed">
+                                                <VisualState.Setters>
+                                                    <Setter Property="BackgroundColor"
+                                        Value="#14000000" />
+                                                </VisualState.Setters>
+                                            </VisualState>
+                                            <VisualState x:Name="PointerOver">
+                                                <VisualState.Setters>
+                                                    <Setter Property="BackgroundColor"
+                                        Value="#14000000" />
+                                                </VisualState.Setters>
+                                            </VisualState>
+                                        </VisualStateGroup>
+                                    </VisualStateGroupList>
+                                </VisualStateManager.VisualStateGroups>
+                            </Button>
+                        </Grid>
+                        <BoxView Grid.Row="1" HeightRequest="1" Margin="1" BackgroundColor="#CAC4D0"/>
+                    </Grid>
+
+                    <aiassistview:SfAIAssistView  x:Name="aiAssistView" WidthRequest="300" HeightRequest="400" VerticalOptions="End"
                              ShowHeader="False" 
                              AssistItems="{Binding Messages}">
 
                         <aiassistview:SfAIAssistView.Behaviors>
-                            <local:DataFormAssistViewBehavior x:Name="dataFormAssistViewModel"  DataFormNameLabel="{x:Reference dataFormNameLabel}" BusyIndicator="{x:Reference busyIndicator}"  DataForm="{x:Reference dataForm}"  DataFormGeneratorModel="{x:Reference dataFormGeneratorModel}" Entry="{x:Reference entry}" CreateButton="{x:Reference createButton}"/>
+                            <local:DataFormAssistViewBehavior x:Name="dataFormAssistViewModel"  DataFormNameLabel="{x:Reference dataFormNameLabel}" RefreshButton="{x:Reference refreshButton}" BusyIndicator="{x:Reference busyIndicator}"  DataForm="{x:Reference dataForm}"  DataFormGeneratorModel="{x:Reference dataFormGeneratorModel}" Entry="{x:Reference entry}" CreateButton="{x:Reference createButton}"/>
                         </aiassistview:SfAIAssistView.Behaviors>
                     </aiassistview:SfAIAssistView>
+
                 </VerticalStackLayout>
             </Border>
-
         </Grid>
 
         <core:SfBusyIndicator IsVisible="False"
-x:Name="busyIndicator"
-IsRunning="False"
-AnimationType="Cupertino" />
+                              x:Name="busyIndicator"
+                              IsRunning="False"
+                              AnimationType="Cupertino" />
 
     </Grid>
 </ContentView>

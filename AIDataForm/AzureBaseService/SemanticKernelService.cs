@@ -32,12 +32,12 @@
         private IChatCompletionService? chatCompletions;
 
         /// <summary>
-        /// The kernal
+        /// The kernel
         /// </summary>
         private Kernel? kernel;
 
         /// <summary>
-        /// The chat histroy
+        /// The chat history
         /// </summary>
         private ChatHistory? chatHistory;
 
@@ -52,7 +52,7 @@
         private static bool isAlreadyValidated = false;
 
         /// <summary>
-        /// The uri result field
+        /// The Uri result field
         /// </summary>
         private Uri? uriResult;
 
@@ -112,7 +112,7 @@
         }
 
         /// <summary>
-        /// Gets or sets a value indicating the kernal object
+        /// Gets or sets a value indicating the kernel object
         /// </summary>
         public Kernel? Kernel
         {
@@ -138,8 +138,8 @@
             this.GetAzureOpenAIKernal();
             #endregion
 
-            #region Google Gimini
-            // Use below method for Google Gimini
+            #region Google Gemini
+            // Use below method for Google Gemini
             //this.GetGoogleGiminiAIKernal();
             #endregion
 
@@ -152,14 +152,13 @@
 
             if (!isValidUri || !endpoint.Contains("http") || string.IsNullOrEmpty(key) || key.Contains("API key") || string.IsNullOrEmpty(deploymentName) || deploymentName.Contains("deployment name") || string.IsNullOrEmpty(imageDeploymentName))
             {
-                ShowAlertAsync();
                 return;
             }
             try
             {
                 if (ChatHistory != null && chatCompletions != null)
                 {
-                    // test the semantic kernal with message.
+                    // test the semantic kernel with message.
                     ChatHistory.AddSystemMessage("Hello, Test Check");
                     await chatCompletions.GetChatMessageContentAsync(chatHistory: ChatHistory, kernel: kernel);
                 }
@@ -167,7 +166,6 @@
             catch (Exception)
             {
                 // Handle any exceptions that indicate the credentials or endpoint are invalid.               
-                ShowAlertAsync();
                 return;
             }
             IsCredentialValid = true;
@@ -176,7 +174,7 @@
 
         #region Azure OpenAI
         /// <summary>
-        /// To get the Azure open ai kernal method
+        /// To get the Azure open AI kernel method
         /// </summary>
         private void GetAzureOpenAIKernal()
         {
@@ -184,17 +182,17 @@
             chatHistory = new ChatHistory();
             var builder = Kernel.CreateBuilder().AddAzureOpenAIChatCompletion(deploymentName, endpoint, key);
 
-            // Get the kernal from build
+            // Get the kernel from build
             kernel = builder.Build();
 
-            //Get the chat completions from kernal
+            //Get the chat completions from kernel
             chatCompletions = kernel.GetRequiredService<IChatCompletionService>();
         }
         #endregion
 
-        #region Goolge Gimini
+        #region Google Gemini
         /// <summary>
-        /// To get the google gimini ai kermal
+        /// To get the Google Gemini ai Kernel
         /// </summary>
         private void GetGoogleGiminiAIKernal()
         {
@@ -208,23 +206,11 @@
             //            kernelBuilder.AddGoogleAIGeminiChatCompletion(modelId: "NAME_OF_MODEL", apiKey: key);
             //            Kernel kernel = kernelBuilder.Build();
 
-            //            //Get the chat completions from kernal
+            //            //Get the chat completions from Kernel
             //            chatCompletions = kernel.GetRequiredService<IChatCompletionService>();
         }
 
         #endregion
-
-        /// <summary>
-        /// Show Alert Popup
-        /// </summary>
-        private async void ShowAlertAsync()
-        {
-            if (Application.Current?.MainPage != null && !IsCredentialValid)
-            {
-                isAlreadyValidated = true;
-                await Application.Current.MainPage.DisplayAlert("Alert", "The Azure API key or endpoint is missing or incorrect. Please verify your credentials. You can also continue with the offline data.", "OK");
-            }
-        }
 
         /// <summary>
         /// Retrieves an answer from the deployment name model using the provided user prompt.

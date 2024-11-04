@@ -1,4 +1,6 @@
-﻿namespace AIDataForm
+﻿// Ignore Spelling: Offline
+
+namespace AIDataForm
 {
     using Syncfusion.Maui.AIAssistView;
     using System.Collections.ObjectModel;
