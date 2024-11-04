@@ -90,7 +90,7 @@
         /// </summary>
         public Editor? Entry { get; set; }
 
-        public Button RefreshButton { get; set; }
+        public Button? RefreshButton { get; set; }
 
         /// <summary>
         /// Gets or sets the create button.
@@ -98,9 +98,14 @@
         public Button? CreateButton { get; set; }
 
         /// <summary>
-        /// Gets or sets the ai action button.
+        /// Gets or sets the AI action button.
         /// </summary>
         public SfButton? AIActionButton { get; set; }
+
+        /// <summary>
+        /// Animation for AI button.
+        /// </summary>
+        private Animation? animation;
 
         /// <summary>
         /// Gets or sets the close button.
@@ -110,11 +115,14 @@
         /// <summary>
         /// On attached method.
         /// </summary>
-        /// <param name="bindable">The bindable element.</param>
-        protected override void OnAttachedTo(SfAIAssistView bindable)
+        /// <param name="assistView">The assistView element.</param>
+        protected override void OnAttachedTo(SfAIAssistView assistView)
         {
-            base.OnAttachedTo(bindable);
-            this.assistView = bindable;
+            base.OnAttachedTo(assistView);
+            this.assistView = assistView;
+            animation = new Animation();
+
+            UpdateVisibility();
 
             if (this.assistView != null)
             {
@@ -139,17 +147,66 @@
             if (this.AIActionButton != null)
             {
                 this.AIActionButton.Clicked += this.OnAIActionButtonClicked;
+                this.StartAnimation();
+            }
+        }
+
+        private void UpdateVisibility()
+        {
+            if (this.DataFormGeneratorModel != null)
+            {
+                if (SemanticKernelService.IsCredentialValid)
+                {
+                    this.DataFormGeneratorModel.ShowInputView = true;
+                    this.DataFormGeneratorModel.ShowDataForm = false;
+                }
+                else
+                {
+                    UpdateCreateVisibility();
+
+                    AssistItemSuggestion assistItemSuggestion = this.GetSubjectSuggestion();
+                    AssistItem assistItem = new AssistItem() { Text = "You are in offline mode. Please select one of the forms below.", Suggestion = assistItemSuggestion, ShowAssistItemFooter = false };
+                    this.DataFormGeneratorModel!.Messages.Add(assistItem);
+                }
+            }
+        }
+
+        private async void StartAnimation()
+        {
+            if (this.AIActionButton != null && this.animation != null)
+            {
+                var bubbleEffect = new Animation(v => this.AIActionButton.Scale = v, 1, 1.15, Easing.CubicInOut);
+                var fadeEffect = new Animation(v => this.AIActionButton.Opacity = v, 1, 0.5, Easing.CubicInOut);
+
+                animation.Add(0, 0.5, bubbleEffect);
+                animation.Add(0, 0.5, fadeEffect);
+                animation.Add(0.5, 1, new Animation(v => this.AIActionButton.Scale = v, 1.15, 1, Easing.CubicInOut));
+                animation.Add(0.5, 1, new Animation(v => this.AIActionButton.Opacity = v, 0.5, 1, Easing.CubicInOut));
+                await Task.Delay(250);
+
+                animation.Commit(this.AIActionButton, "BubbleEffect", length: 1500, easing: Easing.CubicInOut, repeat: () => true);
             }
         }
 
         private void RefreshButton_Clicked(object? sender, EventArgs e)
         {
-            this.DataFormGeneratorModel.Messages.Clear();
+            if (this.DataFormGeneratorModel != null)
+            {
+                this.DataFormGeneratorModel.Messages.Clear();
+
+                if (!SemanticKernelService.IsCredentialValid)
+                {
+                    AssistItemSuggestion assistItemSuggestion = this.GetSubjectSuggestion();
+                    AssistItem assistItem = new AssistItem() { Text = "You are in offline mode. Please select one of the forms below.", Suggestion = assistItemSuggestion, ShowAssistItemFooter = false };
+                    this.DataFormGeneratorModel!.Messages.Add(assistItem);
+                }
+            }
         }
 
         private void CloseButton_Clicked(object? sender, EventArgs e)
         {
-            this.DataFormGeneratorModel.ShowAssistView = false;
+            if (this.DataFormGeneratorModel != null)
+                this.DataFormGeneratorModel.ShowAssistView = false;
         }
 
         /// <summary>
@@ -159,16 +216,17 @@
         /// <param name="e">The event args.</param>
         private void OnAIActionButtonClicked(object? sender, EventArgs e)
         {
-            this.DataFormGeneratorModel.ShowAssistView = true;
+            if (this.DataFormGeneratorModel != null)
+                this.DataFormGeneratorModel.ShowAssistView = true;
         }
 
         /// <summary>
         /// On Detached method.
         /// </summary>
-        /// <param name="bindable">The bindable element.</param>
-        protected override void OnDetachingFrom(SfAIAssistView bindable)
+        /// <param name="assistView">The assistView element.</param>
+        protected override void OnDetachingFrom(SfAIAssistView assistView)
         {
-            base.OnDetachingFrom(bindable);
+            base.OnDetachingFrom(assistView);
             if (this.assistView != null)
             {
                 this.assistView.Request -= this.OnAssistViewRequest;
@@ -183,6 +241,16 @@
             {
                 this.AIActionButton.Clicked -= this.OnAIActionButtonClicked;
             }
+
+            if (this.CloseButton != null)
+            {
+                this.CloseButton.Clicked -= CloseButton_Clicked;
+            }
+
+            if (this.RefreshButton != null)
+            {
+                this.RefreshButton.Clicked -= RefreshButton_Clicked; ;
+            }
         }
 
         /// <summary>
@@ -190,22 +258,13 @@
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The event args.</param>
-        private async void OnCreateButtonClicked(object? sender, EventArgs e)
+        private void OnCreateButtonClicked(object? sender, EventArgs e)
         {
             UpdateBusyIndicator(true);
 
             if (SemanticKernelService.IsCredentialValid)
             {
                 this.GetDataFormFromAI(this.Entry!.Text);
-            }
-            else
-            {
-                UpdateCreateVisibility();
-                UpdateBusyIndicator(false);
-
-                AssistItemSuggestion assistItemSuggestion = this.GetSubjectSuggestion();
-                AssistItem assistItem = new AssistItem() { Text = "You are in offline mode. Please select one of the forms below.", Suggestion = assistItemSuggestion, ShowAssistItemFooter = false };
-                this.DataFormGeneratorModel!.Messages.Add(assistItem);
             }
         }
 
@@ -217,7 +276,7 @@
         private async void OnAssistViewRequest(object? sender, RequestEventArgs e)
         {
             string requestText = e.RequestItem.Text;
-            if (SemanticKernelService.IsCredentialValid)
+            if (SemanticKernelService.IsCredentialValid && this.DataFormGeneratorModel != null)
             {
                 this.DataFormGeneratorModel.ShowOfflineLabel = false;
                 this.GetDataFormFromAI(requestText);
@@ -265,7 +324,7 @@
             {
                 if (this.DataForm != null && this.DataForm.Items != null && this.DataForm.Items.Count > 0)
                 {
-                    var removeItem = this.DataForm.Items.FirstOrDefault(x => (x as DataFormItem).FieldName == "ProductVersion");
+                    var removeItem = this.DataForm.Items.FirstOrDefault(x => x != null && (x is DataFormItem dataFormItem) && dataFormItem.FieldName == "ProductVersion");
                     if (removeItem != null)
                         this.DataForm.Items.Remove(removeItem);
                 }
@@ -314,9 +373,11 @@
                 new DataFormTextItem() { FieldName = "ZipCode" }
             };
             this.DataForm!.Items = dataFormViewItems;
-            this.DataFormGeneratorModel.ShowSubmitButton = true;
-            this.DataFormGeneratorModel.ShowOfflineLabel = false;
-
+            if (this.DataFormGeneratorModel != null)
+            {
+                this.DataFormGeneratorModel.ShowSubmitButton = true;
+                this.DataFormGeneratorModel.ShowOfflineLabel = false;
+            }
         }
 
         private void InitializeOfflineFeedbackDataForm()
@@ -331,8 +392,12 @@
                 new DataFormMultilineItem() { FieldName = "Comments" },
             };
             this.DataForm!.Items = dataFormViewItems;
-            this.DataFormGeneratorModel.ShowSubmitButton = true;
-            this.DataFormGeneratorModel.ShowOfflineLabel = false;
+            if (this.DataFormGeneratorModel != null)
+            {
+                this.DataFormGeneratorModel.ShowSubmitButton = true;
+                this.DataFormGeneratorModel.ShowOfflineLabel = false;
+            }
+
         }
 
         private void UpdateBusyIndicator(bool value)
@@ -449,14 +514,15 @@
             }
             else
             {
-                if(response == string.Empty)
+                if (response == string.Empty)
                 {
                     UpdateBusyIndicator(false);
                     await App.Current.MainPage.DisplayAlert("", "Please enter valid inputs.", "OK");
                 }
                 else if (response == "New Form")
                 {
-                    this.DataFormGeneratorModel.ShowOfflineLabel = false;
+                    if (this.DataFormGeneratorModel != null)
+                        this.DataFormGeneratorModel.ShowOfflineLabel = false;
                     this.GenerateAIDataForm(userPrompt);
                 }
                 else if (response == "Change Title")
@@ -467,7 +533,7 @@
                     AssistItem subjectMessage = new AssistItem() { Text = "The Data Form title changed successfully...", ShowAssistItemFooter = false };
                     this.DataFormGeneratorModel?.Messages.Add(subjectMessage);
                 }
-                else 
+                else
                 {
                     this.EditDataForm(userPrompt, response);
                 }
@@ -496,12 +562,12 @@
 
             var dataFormTypes = JsonConvert.DeserializeObject<Dictionary<string, object>>(typeResponse);
 
-            if (this.DataForm != null)
+            if (this.DataForm != null && dataFormTypes != null)
             {
                 var items = new ObservableCollection<DataFormViewItem>();
-                foreach (var data in dataFormTypes!)
+                foreach (var data in dataFormTypes)
                 {
-                    DataFormItem dataFormItem = GenerateDataFormItems(data.Value?.ToString(), data.Key);
+                    DataFormItem? dataFormItem = GenerateDataFormItems(data.Value.ToString(), data.Key);
                     if (dataFormItem != null)
                         items.Add(dataFormItem);
                 }
@@ -518,10 +584,11 @@
 
         private void UpdateCreateVisibility()
         {
-            this.DataFormGeneratorModel.ShowInputView = false;
-            this.DataFormGeneratorModel.ShowDataForm = true;
-
-
+            if (this.DataFormGeneratorModel != null)
+            {
+                this.DataFormGeneratorModel.ShowInputView = false;
+                this.DataFormGeneratorModel.ShowDataForm = true;
+            }
         }
 
         /// <summary>
@@ -552,7 +619,7 @@
                             var newItem = dataFormTypes.FirstOrDefault();
                             if (newItem.Value != null)
                             {
-                                DataFormItem dataFormItem = GenerateDataFormItems(newItem.Value.ToString(), newItem.Key);
+                                DataFormItem? dataFormItem = GenerateDataFormItems(newItem.Value.ToString(), newItem.Key);
                                 if (dataFormItem != null)
                                 {
                                     this.DataForm.Items.Add(dataFormItem);
@@ -571,7 +638,7 @@
                         "Without additional formatting characters like backticks, newlines, or extra spaces.";
                     string response = await this.semanticKernelService.GetAnswerFromGPT(prompt + condition);
 
-                    var removeItem = this.DataForm!.Items.FirstOrDefault(x => x != null && (x as DataFormItem).FieldName == response);
+                    var removeItem = this.DataForm!.Items.FirstOrDefault(x => x != null && (x is DataFormItem dataFormItem) && dataFormItem.FieldName == response);
                     if (removeItem != null)
                     {
                         this.DataForm.Items.Remove(removeItem);
@@ -607,11 +674,13 @@
                             if (dataFormTypes != null && dataFormTypes.Count > 0)
                             {
                                 var newItem = dataFormTypes.FirstOrDefault();
-                                var removeItem = this.DataForm.Items.FirstOrDefault(x => (x as DataFormItem).FieldName == response);
+                                var removeItem = this.DataForm.Items.FirstOrDefault(x => x != null && x is DataFormItem dataFormItem && dataFormItem.FieldName == response);
                                 if (removeItem != null && newItem.Value != null)
                                 {
                                     int index = DataForm.Items.IndexOf(removeItem);
-                                    this.DataForm.Items[index] = GenerateDataFormItems(newItem.Value.ToString(), newItem.Key);
+                                    var replcaeItem = GenerateDataFormItems(newItem.Value.ToString(), newItem.Key);
+                                    if (replcaeItem != null)
+                                        this.DataForm.Items[index] = replcaeItem;
                                     UpdateChangesResponse();
                                 }
                             }
@@ -639,7 +708,7 @@
                                  .Select(v => v.Trim())
                                  .ToList();
 
-                            var removeItem = this.DataForm!.Items.FirstOrDefault(x => x != null && (x as DataFormItem).FieldName.Equals(propertyName));
+                            var removeItem = this.DataForm!.Items.FirstOrDefault(x => x != null && x is DataFormItem dataFormItem && dataFormItem.FieldName.Equals(propertyName));
                             if (removeItem != null && removeItem is DataFormListItem pickerItem)
                             {
                                 pickerItem.ItemsSource = itemsSource;
@@ -657,9 +726,9 @@
             this.DataFormGeneratorModel?.Messages.Add(subjectMessage);
         }
 
-        private DataFormItem? GenerateDataFormItems(string dataFormItemType, string fieldName)
+        private DataFormItem? GenerateDataFormItems(string? dataFormItemType, string fieldName)
         {
-            DataFormItem dataFormItem = dataFormItemType switch
+            DataFormItem? dataFormItem = dataFormItemType switch
             {
                 "DataFormTextItem" => new DataFormTextItem(),
                 "DataFormMultiLineTextItem" => new DataFormMultilineItem(),

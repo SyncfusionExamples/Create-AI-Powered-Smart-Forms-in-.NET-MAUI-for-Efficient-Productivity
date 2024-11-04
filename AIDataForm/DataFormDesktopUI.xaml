@@ -64,22 +64,21 @@
 
             <Border x:Name="headerView" HeightRequest="450" Background="White"  StrokeShape="RoundRectangle 10"
                        HorizontalOptions="Center"  Grid.Column="1" >
-                <Grid>
+                <VerticalStackLayout>
                     <Grid RowDefinitions="auto,auto" Background="#F7F2FB" >
                         <Grid ColumnDefinitions="auto,*" >
                             <Label Text="AI Assistant" 
                            Grid.Column="0" 
-                           FontSize="16"
+                           FontSize="16" 
                            FontFamily="Roboto-Medium" 
-                           Padding="16,0,0,0" 
+                           Padding="16,0,0,0"  VerticalTextAlignment="Center"
                            FontAttributes="Bold"
                            VerticalOptions="Center"/>
                             <Button x:Name="refreshButton"
                             Grid.Column="1"
-                            BorderWidth="0" 
-                            CornerRadius="20"
-                            HeightRequest="40"
-                            WidthRequest="40"
+                            CornerRadius="30"
+                            HeightRequest="30"
+                            WidthRequest="30"
                             FontSize="15"
                             Text="&#xe72b;" 
                             BackgroundColor="#f7f2fb"
@@ -116,10 +115,10 @@
                                 </VisualStateManager.VisualStateGroups>
                             </Button>
                         </Grid>
-                        <BoxView Grid.Row="1" HeightRequest="1" BackgroundColor="#CAC4D0"/>
+                        <BoxView Grid.Row="1" HeightRequest="1" Margin="1" BackgroundColor="#CAC4D0"/>
                     </Grid>
 
-                    <aiassistview:SfAIAssistView  x:Name="aiAssistView" WidthRequest="300" HeightRequest="420" VerticalOptions="End"
+                    <aiassistview:SfAIAssistView  x:Name="aiAssistView" WidthRequest="300" HeightRequest="400" VerticalOptions="End"
                              ShowHeader="False" 
                              AssistItems="{Binding Messages}">
 
@@ -128,7 +127,7 @@
                         </aiassistview:SfAIAssistView.Behaviors>
                     </aiassistview:SfAIAssistView>
 
-                </Grid>
+                </VerticalStackLayout>
             </Border>
         </Grid>
 
