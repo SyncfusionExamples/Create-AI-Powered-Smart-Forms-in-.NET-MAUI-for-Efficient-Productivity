@@ -122,8 +122,6 @@
             this.assistView = assistView;
             animation = new Animation();
 
-            UpdateVisibility();
-
             if (this.assistView != null)
             {
                 this.assistView.Request += this.OnAssistViewRequest;
@@ -149,13 +147,26 @@
                 this.AIActionButton.Clicked += this.OnAIActionButtonClicked;
                 this.StartAnimation();
             }
+
+            if(semanticKernelService != null)
+            {
+                semanticKernelService.PropertyChanged += SemanticKernelService_PropertyChanged;
+            }
+        }
+
+        private void SemanticKernelService_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if(e.PropertyName == nameof(semanticKernelService.IsCredentialValid))
+            {
+                UpdateVisibility();
+            }
         }
 
         private void UpdateVisibility()
         {
             if (this.DataFormGeneratorModel != null)
             {
-                if (SemanticKernelService.IsCredentialValid)
+                if (semanticKernelService.IsCredentialValid)
                 {
                     this.DataFormGeneratorModel.ShowInputView = true;
                     this.DataFormGeneratorModel.ShowDataForm = false;
@@ -194,7 +205,7 @@
             {
                 this.DataFormGeneratorModel.Messages.Clear();
 
-                if (!SemanticKernelService.IsCredentialValid)
+                if (!semanticKernelService.IsCredentialValid)
                 {
                     AssistItemSuggestion assistItemSuggestion = this.GetSubjectSuggestion();
                     AssistItem assistItem = new AssistItem() { Text = "You are in offline mode. Please select one of the forms below.", Suggestion = assistItemSuggestion, ShowAssistItemFooter = false };
@@ -251,6 +262,11 @@
             {
                 this.RefreshButton.Clicked -= RefreshButton_Clicked; ;
             }
+
+            if (semanticKernelService != null)
+            {
+                semanticKernelService.PropertyChanged -= SemanticKernelService_PropertyChanged;
+            }
         }
 
         /// <summary>
@@ -262,7 +278,7 @@
         {
             UpdateBusyIndicator(true);
 
-            if (SemanticKernelService.IsCredentialValid)
+            if (semanticKernelService.IsCredentialValid)
             {
                 this.GetDataFormFromAI(this.Entry!.Text);
             }
@@ -276,7 +292,7 @@
         private async void OnAssistViewRequest(object? sender, RequestEventArgs e)
         {
             string requestText = e.RequestItem.Text;
-            if (SemanticKernelService.IsCredentialValid && this.DataFormGeneratorModel != null)
+            if (semanticKernelService.IsCredentialValid && this.DataFormGeneratorModel != null)
             {
                 this.DataFormGeneratorModel.ShowOfflineLabel = false;
                 this.GetDataFormFromAI(requestText);

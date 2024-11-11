@@ -2,7 +2,9 @@
 {
     using Microsoft.SemanticKernel;
     using Microsoft.SemanticKernel.ChatCompletion;
-    internal  class SemanticKernelService
+    using System.ComponentModel;
+
+    internal  class SemanticKernelService : INotifyPropertyChanged
     {
         #region Fields
 
@@ -56,6 +58,8 @@
         /// </summary>
         private Uri? uriResult;
 
+        public event PropertyChangedEventHandler? PropertyChanged;
+
         #endregion
 
         public SemanticKernelService()
@@ -69,7 +73,7 @@
         /// Gets or Set a value indicating whether an credentials are valid or not.
         /// Returns <c>true</c> if the credentials are valid; otherwise, <c>false</c>.
         /// </summary>
-        public static bool IsCredentialValid
+        public bool IsCredentialValid
         {
             get
             {
@@ -78,6 +82,7 @@
             set
             {
                 isCredentialValid = value;
+                RaisePropertyChanged(nameof(IsCredentialValid));
             }
         }
 
@@ -127,6 +132,14 @@
         }
 
         #endregion
+
+        public void  RaisePropertyChanged(string propName)
+        {
+            if (this.PropertyChanged != null)
+            {
+                this.PropertyChanged(this, new PropertyChangedEventArgs(propName));
+            }
+        }
 
         /// <summary>
         /// Validate Azure Credentials
