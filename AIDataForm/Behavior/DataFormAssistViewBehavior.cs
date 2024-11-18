@@ -122,6 +122,8 @@
             this.assistView = assistView;
             animation = new Animation();
 
+            UpdateVisibility();
+
             if (this.assistView != null)
             {
                 this.assistView.Request += this.OnAssistViewRequest;
@@ -148,15 +150,35 @@
                 this.StartAnimation();
             }
 
-            if(semanticKernelService != null)
+            if (Entry != null)
+            {
+                Entry.TextChanged += Entry_TextChanged;
+            }
+
+            if (semanticKernelService != null)
             {
                 semanticKernelService.PropertyChanged += SemanticKernelService_PropertyChanged;
             }
         }
 
+        private void Entry_TextChanged(object? sender, TextChangedEventArgs e)
+        {
+            if (CreateButton != null && Entry != null)
+            {
+                if (string.IsNullOrEmpty(Entry.Text))
+                {
+                    CreateButton.IsEnabled = false;
+                }
+                else
+                {
+                    CreateButton.IsEnabled = true;
+                }
+            }
+        }
+
         private void SemanticKernelService_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if(e.PropertyName == nameof(semanticKernelService.IsCredentialValid))
+            if (e.PropertyName == nameof(semanticKernelService.IsCredentialValid))
             {
                 UpdateVisibility();
             }
@@ -170,10 +192,12 @@
                 {
                     this.DataFormGeneratorModel.ShowInputView = true;
                     this.DataFormGeneratorModel.ShowDataForm = false;
+                    this.DataFormGeneratorModel!.Messages.Clear();
                 }
                 else
                 {
-                    UpdateCreateVisibility();
+                    this.DataFormGeneratorModel.ShowInputView = false;
+                    this.DataFormGeneratorModel.ShowDataForm = true;
 
                     AssistItemSuggestion assistItemSuggestion = this.GetSubjectSuggestion();
                     AssistItem assistItem = new AssistItem() { Text = "You are in offline mode. Please select one of the forms below.", Suggestion = assistItemSuggestion, ShowAssistItemFooter = false };
@@ -754,12 +778,8 @@
                 "DataFormDateItem" => new DataFormDateItem(),
                 "DataFormTimeItem" => new DataFormTimeItem(),
                 "DataFormCheckBoxItem" => new DataFormCheckBoxItem(),
-                "DataFormSwitchItem" => new DataFormSwitchItem(),
-                "DataFormPickerItem" => new DataFormPickerItem(),
-                "DataFormComboBoxItem" => new DataFormComboBoxItem(),
                 "DataFormAutoCompleteItem" => new DataFormAutoCompleteItem(),
                 "DataFormRadioGroupItem" => new DataFormRadioGroupItem(),
-                "DataFormSegmentItem" => new DataFormSegmentItem(),
                 _ => null
             };
 
