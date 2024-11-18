@@ -19,15 +19,13 @@
             <Label x:Name="describeLabel" Text="Create AI-Powered Smart Forms in .NET MAUI for Efficient Productivity." FontSize="Medium" FontAttributes="Bold" />
             <Grid ColumnDefinitions="Auto,Auto" Margin="0,20,0,0" ColumnSpacing="5">
                 <Editor AutoSize="TextChanges" x:Name="entry" PlaceholderColor="Gray" Grid.Column="0"  VerticalOptions="Center" HorizontalOptions="Center" WidthRequest="300" Placeholder="Create your own data form"/>
-                <Button x:Name="createButton" Grid.Column="1"  CornerRadius="10" Text="Create"  VerticalOptions="Center" HorizontalOptions="End"/>
+                <Button x:Name="createButton"  IsEnabled="False" Grid.Column="1"  CornerRadius="10" Text="Create"  VerticalOptions="Center" HorizontalOptions="End"/>
             </Grid>
         </VerticalStackLayout>
 
         <Grid x:Name="mainGrid" IsVisible="{Binding ShowDataForm}" ColumnDefinitions="*,*" HorizontalOptions="Center">
             <Grid Grid.Column="0" HeightRequest="450"  >
-                <Frame HasShadow="False" 
-                        CornerRadius="10"
-                        WidthRequest="450" Padding="10" Margin="0,0,25,0">
+                <Border Background="White" StrokeShape="RoundRectangle 10" Stroke="White" WidthRequest="450" Padding="10" Margin="0,0,25,0">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="40"/>
@@ -59,7 +57,7 @@
                                  Margin="20, 0, 20, 0"
                                  HeightRequest="40"/>
                     </Grid>
-                </Frame>
+                </Border>
             </Grid>
 
             <Border x:Name="headerView" HeightRequest="450" Background="White"  StrokeShape="RoundRectangle 10"
