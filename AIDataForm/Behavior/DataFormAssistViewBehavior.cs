@@ -63,7 +63,7 @@
         /// <summary>
         /// Holds the azure AI services.
         /// </summary>
-        private SemanticKernelService semanticKernelService = new SemanticKernelService();
+        private AzureOpenAIBaseService azureOpenAIBaseService = new AzureOpenAIBaseService();
 
         /// <summary>
         /// Gets or sets the data form generator model.
@@ -154,11 +154,6 @@
             {
                 Entry.TextChanged += Entry_TextChanged;
             }
-
-            if (semanticKernelService != null)
-            {
-                semanticKernelService.PropertyChanged += SemanticKernelService_PropertyChanged;
-            }
         }
 
         private void Entry_TextChanged(object? sender, TextChangedEventArgs e)
@@ -175,20 +170,11 @@
                 }
             }
         }
-
-        private void SemanticKernelService_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(semanticKernelService.IsCredentialValid))
-            {
-                UpdateVisibility();
-            }
-        }
-
         private void UpdateVisibility()
         {
             if (this.DataFormGeneratorModel != null)
             {
-                if (semanticKernelService.IsCredentialValid)
+                if (azureOpenAIBaseService.IsCredentialValid)
                 {
                     this.DataFormGeneratorModel.ShowInputView = true;
                     this.DataFormGeneratorModel.ShowDataForm = false;
@@ -229,7 +215,7 @@
             {
                 this.DataFormGeneratorModel.Messages.Clear();
 
-                if (!semanticKernelService.IsCredentialValid)
+                if (!azureOpenAIBaseService.IsCredentialValid)
                 {
                     AssistItemSuggestion assistItemSuggestion = this.GetSubjectSuggestion();
                     AssistItem assistItem = new AssistItem() { Text = "You are in offline mode. Please select one of the forms below.", Suggestion = assistItemSuggestion, ShowAssistItemFooter = false };
@@ -286,11 +272,6 @@
             {
                 this.RefreshButton.Clicked -= RefreshButton_Clicked; ;
             }
-
-            if (semanticKernelService != null)
-            {
-                semanticKernelService.PropertyChanged -= SemanticKernelService_PropertyChanged;
-            }
         }
 
         /// <summary>
@@ -302,7 +283,7 @@
         {
             UpdateBusyIndicator(true);
 
-            if (semanticKernelService.IsCredentialValid)
+            if (azureOpenAIBaseService.IsCredentialValid)
             {
                 this.GetDataFormFromAI(this.Entry!.Text);
             }
@@ -316,7 +297,7 @@
         private async void OnAssistViewRequest(object? sender, RequestEventArgs e)
         {
             string requestText = e.RequestItem.Text;
-            if (semanticKernelService.IsCredentialValid && this.DataFormGeneratorModel != null)
+            if (azureOpenAIBaseService.IsCredentialValid && this.DataFormGeneratorModel != null)
             {
                 this.DataFormGeneratorModel.ShowOfflineLabel = false;
                 this.GetDataFormFromAI(requestText);
@@ -543,7 +524,7 @@
                 $"The options are 'Add', 'Add Values','PlaceholderText' ,'Remove', 'Replace', 'Insert', 'New Form', 'Change Title', or 'No Change'" +
                 " Without additional formatting and special characters like backticks, newlines, or extra spaces.";
 
-            var response = await this.semanticKernelService.GetAnswerFromGPT(prompt);
+            var response = await this.azureOpenAIBaseService.GetAIResponse(prompt);
 
             if (string.IsNullOrEmpty(response))
             {
@@ -568,7 +549,7 @@
                 else if (response == "Change Title")
                 {
                     string dataFormNamePrompt = $"Change the title for data form based on user prompt: {userPrompt}. Provide only the title, with no additional explanation";
-                    string getDataFormName = await this.semanticKernelService.GetAnswerFromGPT(dataFormNamePrompt);
+                    string getDataFormName = await this.azureOpenAIBaseService.GetAIResponse(dataFormNamePrompt);
                     this.DataFormNameLabel!.Text = getDataFormName;
                     AssistItem subjectMessage = new AssistItem() { Text = "The Data Form title changed successfully...", ShowAssistItemFooter = false };
                     this.DataFormGeneratorModel?.Messages.Add(subjectMessage);
@@ -587,7 +568,7 @@
         private async void GenerateAIDataForm(string userPrompt)
         {
             string dataFormNamePrompt = $"Generate a title for a data form based on the following string: {userPrompt}. The title should clearly reflect the purpose of the data form in general term. Provide only the title, with no additional explanation";
-            string getDataFormName = await this.semanticKernelService.GetAnswerFromGPT(dataFormNamePrompt);
+            string getDataFormName = await this.azureOpenAIBaseService.GetAIResponse(dataFormNamePrompt);
             this.DataFormNameLabel!.Text = getDataFormName;
 
             string prompt = $"Generate a data form based on the user prompt: {userPrompt}.";
@@ -598,7 +579,7 @@
                 "The result must be in JSON format" +
                 "Without additional formatting characters like backticks, newlines, or extra spaces.";
 
-            var typeResponse = await this.semanticKernelService.GetAnswerFromGPT(prompt + condition);
+            var typeResponse = await this.azureOpenAIBaseService.GetAIResponse(prompt + condition);
 
             var dataFormTypes = JsonConvert.DeserializeObject<Dictionary<string, object>>(typeResponse);
 
@@ -649,7 +630,7 @@
                         $" and map that property to the most appropriate DataForm available item type includes: DataFormTextItem , DataFormMultiLineTextItem, DataFormPasswordItem, DataFormNumericItem, DataFormMaskedTextItem, DataFormDateItem, DataFormTimeItem, DataFormCheckBoxItem, DataFormSwitchItem, DataFormPickerItem, DataFormComboBoxItem, DataFormAutoCompleteItem, DataFormRadioGroupItem, DataFormSegmentItem" +
        "The result must be in JSON format" +
           "Without additional formatting characters like backticks, newlines, or extra spaces.";
-                    var typeResponse = await this.semanticKernelService.GetAnswerFromGPT(prompt + condition);
+                    var typeResponse = await this.azureOpenAIBaseService.GetAIResponse(prompt + condition);
 
                     var dataFormTypes = JsonConvert.DeserializeObject<Dictionary<string, object>>(typeResponse);
                     if (dataFormTypes != null)
@@ -676,7 +657,7 @@
                     string condition = "The result must be in string" +
                         "Property name must be in PascalCase, without asking questions, or including extra explanations. " +
                         "Without additional formatting characters like backticks, newlines, or extra spaces.";
-                    string response = await this.semanticKernelService.GetAnswerFromGPT(prompt + condition);
+                    string response = await this.azureOpenAIBaseService.GetAIResponse(prompt + condition);
 
                     var removeItem = this.DataForm!.Items.FirstOrDefault(x => x != null && (x is DataFormItem dataFormItem) && dataFormItem.FieldName == response);
                     if (removeItem != null)
@@ -697,7 +678,7 @@
                                            "Do not include explanations, questions, or additional characters like backticks, newlines, or spaces. " +
                                            "Return only the Property name in PascalCase.";
 
-                        string response = await this.semanticKernelService.GetAnswerFromGPT(prompt + condition);
+                        string response = await this.azureOpenAIBaseService.GetAIResponse(prompt + condition);
 
                         string prompt1 = $"Generate a Property name from {match.Groups[3].Value.Trim()}.";
                         string condition1 = "The result must be in string and Property name must be in PascalCase,  without asking questions, or including extra explanations. " +
@@ -705,7 +686,7 @@
                            " map that generated property to the most appropriate DataForm available item type includes: DataFormTextItem , DataFormMultiLineTextItem, DataFormPasswordItem, DataFormNumericItem, DataFormMaskedTextItem, DataFormDateItem, DataFormTimeItem, DataFormCheckBoxItem, DataFormSwitchItem, DataFormPickerItem, DataFormComboBoxItem, DataFormAutoCompleteItem, DataFormRadioGroupItem, DataFormSegmentItem" +
                            "The result must be in JSON format" +
                            "without extra formatting like backticks, newlines, or special characters.";
-                        var typeResponse = await this.semanticKernelService.GetAnswerFromGPT(prompt1 + condition1);
+                        var typeResponse = await this.azureOpenAIBaseService.GetAIResponse(prompt1 + condition1);
 
                         var dataFormTypes = JsonConvert.DeserializeObject<Dictionary<string, object>>(typeResponse);
 
@@ -733,7 +714,7 @@
                  " Output the result in the exact format: 'PropertyName: PropertyName, Values: value1, value2, ...'.";
 
                     string condition = "The PropertyName must be in PascalCase, without extra questions, explanations, or formatting characters.";
-                    string response = await this.semanticKernelService.GetAnswerFromGPT(prompt + condition);
+                    string response = await this.azureOpenAIBaseService.GetAIResponse(prompt + condition);
 
                     if (response != null)
                     {
