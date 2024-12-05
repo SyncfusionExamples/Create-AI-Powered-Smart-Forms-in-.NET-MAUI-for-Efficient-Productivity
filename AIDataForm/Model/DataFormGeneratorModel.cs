@@ -11,20 +11,42 @@ namespace AIDataForm
     /// </summary>
     public class DataFormGeneratorModel : INotifyPropertyChanged
     {
-        private bool showDataForm , showAssistView, showSubmitButton, showInputView, showOfflineLabel;
-       
+        private bool showDataForm, showAssistView, showSubmitButton, showInputView, showOfflineLabel;
+
+        /// <summary>
+        /// Gets or sets the template title
+        /// </summary>
+        internal string? FormTitle { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DataFormGeneratorModel"/> class.
+        /// </summary>
         public DataFormGeneratorModel()
         {
             showInputView = true;
             showOfflineLabel = true;
+
+            // Initialize Templates collection with sample data
+            Templates = new ObservableCollection<TemplateItem>
+            {
+                new TemplateItem { Font="\ue763", Title = "Contact Form", Description = "Create a form to capture user details." },
+                new TemplateItem { Font="\ue761", Title = "Employment Details", Description = "Create a form to capture employment details." },
+                new TemplateItem { Font="\ue73a", Title = "Feedback Form", Description = "Create a form to receive client feedback." }
+            };
         }
+
+        /// <summary>
+        /// Gets or sets the collection of templates.
+        /// </summary>
+        public ObservableCollection<TemplateItem> Templates { get; set; }
+
         /// <summary>
         /// Gets or sets the collection of messages of a conversation.
         /// </summary>
         public ObservableCollection<IAssistItem> Messages { get; set; } = new ObservableCollection<IAssistItem>();
-       
+
         /// <summary>
-        /// Gets or sets the show header.
+        /// Gets or sets a value indicating whether the data form is visible.
         /// </summary>
         public bool ShowDataForm
         {
@@ -82,15 +104,23 @@ namespace AIDataForm
         public event PropertyChangedEventHandler? PropertyChanged;
 
         /// <summary>
-        /// Occurs when property is changed.
+        /// Occurs when a property is changed.
         /// </summary>
-        /// <param name="propName">changed property name</param>
+        /// <param name="propName">The name of the changed property.</param>
         public void RaisePropertyChanged(string propName)
         {
-            if (this.PropertyChanged != null)
-            {
-                this.PropertyChanged(this, new PropertyChangedEventArgs(propName));
-            }
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
         }
+
+    }
+
+    /// <summary>
+    /// Represents a template item with title and description.
+    /// </summary>
+    public class TemplateItem
+    {
+        public string? Font { get; set; }
+        public string? Title { get; set; }
+        public string? Description { get; set; }
     }
 }
