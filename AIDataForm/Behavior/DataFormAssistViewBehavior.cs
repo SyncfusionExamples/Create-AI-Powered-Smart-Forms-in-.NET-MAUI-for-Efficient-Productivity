@@ -5,7 +5,6 @@
     using Syncfusion.Maui.Core;
     using System.Collections.ObjectModel;
     using System.Threading.Tasks;
-    using Newtonsoft.Json;
     using Syncfusion.Maui.DataForm;
     using Syncfusion.Maui.Buttons;
     using System.Text.RegularExpressions;
