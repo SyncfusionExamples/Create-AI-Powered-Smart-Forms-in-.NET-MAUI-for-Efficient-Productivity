@@ -5,7 +5,6 @@
     using Syncfusion.Maui.Core;
     using System.Collections.ObjectModel;
     using System.Threading.Tasks;
-    using Newtonsoft.Json;
     using Syncfusion.Maui.DataForm;
     using Syncfusion.Maui.Buttons;
     using System.Text.RegularExpressions;
@@ -21,7 +20,8 @@
         private string[] OfflineFormSuggestions =
         [
           "Contact Form",
-          "Feedback Form"
+          "Feedback Form",
+          "Employment Details"
         ];
 
         /// <summary>
@@ -31,7 +31,14 @@
         [
             "Add Email",
             "Remove Last Item",
-            "Change Tittle as User Details",
+            "Change Title as User Details",
+        ];
+
+        private string[] EmployeeDetailsActions =
+       [
+            "Employee ID",
+            "Remove Last detail",
+            "Change Title as Employee registration",
         ];
 
         /// <summary>
@@ -40,7 +47,7 @@
         private string[] FeedbackFormActions =
         [
             "Remove Product Version",
-            "Change Tittle as Feedback Form",
+            "Change Title as Feedback Form",
         ];
 
         /// <summary>
@@ -63,7 +70,7 @@
         /// <summary>
         /// Holds the azure AI services.
         /// </summary>
-        private SemanticKernelService semanticKernelService = new SemanticKernelService();
+        private AzureOpenAIBaseService azureOpenAIBaseService = new AzureOpenAIBaseService();
 
         /// <summary>
         /// Gets or sets the data form generator model.
@@ -122,8 +129,6 @@
             this.assistView = assistView;
             animation = new Animation();
 
-            UpdateVisibility();
-
             if (this.assistView != null)
             {
                 this.assistView.Request += this.OnAssistViewRequest;
@@ -155,10 +160,6 @@
                 Entry.TextChanged += Entry_TextChanged;
             }
 
-            if (semanticKernelService != null)
-            {
-                semanticKernelService.PropertyChanged += SemanticKernelService_PropertyChanged;
-            }
         }
 
         private void Entry_TextChanged(object? sender, TextChangedEventArgs e)
@@ -172,36 +173,6 @@
                 else
                 {
                     CreateButton.IsEnabled = true;
-                }
-            }
-        }
-
-        private void SemanticKernelService_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(semanticKernelService.IsCredentialValid))
-            {
-                UpdateVisibility();
-            }
-        }
-
-        private void UpdateVisibility()
-        {
-            if (this.DataFormGeneratorModel != null)
-            {
-                if (semanticKernelService.IsCredentialValid)
-                {
-                    this.DataFormGeneratorModel.ShowInputView = true;
-                    this.DataFormGeneratorModel.ShowDataForm = false;
-                    this.DataFormGeneratorModel!.Messages.Clear();
-                }
-                else
-                {
-                    this.DataFormGeneratorModel.ShowInputView = false;
-                    this.DataFormGeneratorModel.ShowDataForm = true;
-
-                    AssistItemSuggestion assistItemSuggestion = this.GetSubjectSuggestion();
-                    AssistItem assistItem = new AssistItem() { Text = "You are in offline mode. Please select one of the forms below.", Suggestion = assistItemSuggestion, ShowAssistItemFooter = false };
-                    this.DataFormGeneratorModel!.Messages.Add(assistItem);
                 }
             }
         }
@@ -228,13 +199,8 @@
             if (this.DataFormGeneratorModel != null)
             {
                 this.DataFormGeneratorModel.Messages.Clear();
-
-                if (!semanticKernelService.IsCredentialValid)
-                {
-                    AssistItemSuggestion assistItemSuggestion = this.GetSubjectSuggestion();
-                    AssistItem assistItem = new AssistItem() { Text = "You are in offline mode. Please select one of the forms below.", Suggestion = assistItemSuggestion, ShowAssistItemFooter = false };
-                    this.DataFormGeneratorModel!.Messages.Add(assistItem);
-                }
+                this.DataFormGeneratorModel.ShowInputView = true;
+                this.DataFormGeneratorModel.ShowDataForm = false;
             }
         }
 
@@ -286,11 +252,6 @@
             {
                 this.RefreshButton.Clicked -= RefreshButton_Clicked; ;
             }
-
-            if (semanticKernelService != null)
-            {
-                semanticKernelService.PropertyChanged -= SemanticKernelService_PropertyChanged;
-            }
         }
 
         /// <summary>
@@ -298,14 +259,28 @@
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The event args.</param>
-        private void OnCreateButtonClicked(object? sender, EventArgs e)
+        private async void OnCreateButtonClicked(object? sender, EventArgs e)
         {
             UpdateBusyIndicator(true);
 
-            if (semanticKernelService.IsCredentialValid)
+            if (Entry != null && DataFormGeneratorModel != null)
             {
-                this.GetDataFormFromAI(this.Entry!.Text);
+                if (azureOpenAIBaseService.IsCredentialValid)
+                {
+                    this.GetDataFormFromAI(this.Entry.Text);
+                }
+                else
+                {
+                    if (this.DataFormGeneratorModel.FormTitle != null)
+                    {
+                        await CreateOfflineDataForm(this.DataFormGeneratorModel.FormTitle);
+                        DataFormGeneratorModel.ShowInputView = false;
+                        DataFormGeneratorModel.ShowDataForm = true;
+                        DataFormGeneratorModel.ShowOfflineLabel = true;
+                    }
+                }
             }
+
         }
 
         /// <summary>
@@ -316,7 +291,7 @@
         private async void OnAssistViewRequest(object? sender, RequestEventArgs e)
         {
             string requestText = e.RequestItem.Text;
-            if (semanticKernelService.IsCredentialValid && this.DataFormGeneratorModel != null)
+            if (azureOpenAIBaseService.IsCredentialValid && this.DataFormGeneratorModel != null)
             {
                 this.DataFormGeneratorModel.ShowOfflineLabel = false;
                 this.GetDataFormFromAI(requestText);
@@ -326,14 +301,39 @@
             await CreateOfflineDataForm(requestText);
         }
 
-        private async Task CreateOfflineDataForm(string requestText)
+        internal async Task CreateOfflineDataForm(string requestText)
         {
+            if (requestText == this.OfflineFormSuggestions[2])
+            {
+                offlineForm = "Employee Details";
+                this.InitializeOfflineEmployeeDetails();
+                this.ChangeDataFormTitle(this.OfflineFormSuggestions[2]);
+                await this.AddMessageWithDelayAsync("You are in offline mode. Please select your action below...", this.GetEmployeeDetailsSuggestion());
+            }
+            else if (requestText == this.EmployeeDetailsActions[0])
+            {
+                this.DataForm!.Items.Add(new DataFormTextItem() { FieldName = "Employee Id", Keyboard = Keyboard.Text });
+                await this.AddMessageWithDelayAsync("The Employee id editor added successfully.");
+                await this.AddMessageWithDelayAsync("Do you want to edit..?", this.GetYesOrNoSuggestions());
+            }
+            else if (requestText == this.EmployeeDetailsActions[1])
+            {
+                this.DataForm!.Items.RemoveAt(this.DataForm!.Items.Count - 1);
+                await this.AddMessageWithDelayAsync("The last item removed successfully.");
+                await AddMessageWithDelayAsync("Do you want to edit..?", this.GetYesOrNoSuggestions());
+            }
+            else if (requestText == this.EmployeeDetailsActions[2])
+            {
+                this.ChangeDataFormTitle("Employee Registration");
+                await this.AddMessageWithDelayAsync("The title has changed successfully.");
+                await this.AddMessageWithDelayAsync("Do you want to edit..?", this.GetYesOrNoSuggestions());
+            }
             if (requestText == this.OfflineFormSuggestions[0])
             {
                 offlineForm = "ConatctForm";
                 this.InitializeOfflineContactDataForm();
                 this.ChangeDataFormTitle(this.OfflineFormSuggestions[0]);
-                await this.AddMessageWithDelayAsync("Please select your action below...", this.GetContactFormSuggestion());
+                await this.AddMessageWithDelayAsync("You are in offline mode. Please select your action below...", this.GetContactFormSuggestion());
             }
             else if (requestText == this.ContactFormActions[0])
             {
@@ -358,7 +358,7 @@
                 offlineForm = "FeedbackForm";
                 this.InitializeOfflineFeedbackDataForm();
                 this.ChangeDataFormTitle("Product feedback");
-                await this.AddMessageWithDelayAsync("Please select your action below...", this.GetFeedbackFormSuggestion());
+                await this.AddMessageWithDelayAsync("You are in offline mode. Please select your action below...", this.GetFeedbackFormSuggestion());
             }
             else if (requestText == this.FeedbackFormActions[0])
             {
@@ -383,10 +383,15 @@
                 {
                     await this.AddMessageWithDelayAsync("Please select any of the action below...", this.GetFeedbackFormSuggestion());
                 }
-                else
+                else if (offlineForm == "ConatctForm")
                 {
                     await this.AddMessageWithDelayAsync("Please select any of the action below...", this.GetContactFormSuggestion());
                 }
+                else
+                {
+                    await this.AddMessageWithDelayAsync("Please select any of the action below...", this.GetEmployeeDetailsSuggestion());
+                }
+
             }
             else if (requestText == this.YesOrNoSuggestions[1])
             {
@@ -394,9 +399,14 @@
             }
             else if (requestText == this.YesOrNoSuggestions[2])
             {
-                await this.AddMessageWithDelayAsync("You are offline. Please select any other form...");
-                await this.AddMessageWithDelayAsync("Please select any of the forms below...", this.GetSubjectSuggestion());
+                if (this.DataFormGeneratorModel != null)
+                {
+                    this.DataFormGeneratorModel.Messages.Clear();
+                    this.DataFormGeneratorModel.ShowDataForm = false;
+                    this.DataFormGeneratorModel.ShowInputView = true;
+                }
             }
+            UpdateBusyIndicator(false);
         }
 
         private void InitializeOfflineContactDataForm()
@@ -412,6 +422,24 @@
                 new DataFormTextItem() { FieldName = "State" },
                 new DataFormTextItem() { FieldName = "ZipCode" }
             };
+            this.DataForm!.Items = dataFormViewItems;
+            if (this.DataFormGeneratorModel != null)
+            {
+                this.DataFormGeneratorModel.ShowSubmitButton = true;
+                this.DataFormGeneratorModel.ShowOfflineLabel = false;
+            }
+        }
+
+        private void InitializeOfflineEmployeeDetails()
+        {
+            ObservableCollection<DataFormViewItem> dataFormViewItems = new ObservableCollection<DataFormViewItem>
+            {
+                new DataFormTextItem() { FieldName = "FirstName", LabelText = "First Name" },
+                new DataFormTextItem() { FieldName = "LastName", LabelText="Last Name" },
+                new DataFormTextItem() { FieldName = "Designation",  },
+                new DataFormTextItem() { FieldName = "Experience",  },
+                new DataFormTextItem() { FieldName = "Mobile",  },
+              };
             this.DataForm!.Items = dataFormViewItems;
             if (this.DataFormGeneratorModel != null)
             {
@@ -504,6 +532,19 @@
             return chatSubjectSuggestions;
         }
 
+        private AssistItemSuggestion GetEmployeeDetailsSuggestion()
+        {
+            var chatSubjectSuggestions = new AssistItemSuggestion();
+            var contactSuggestions = new ObservableCollection<ISuggestion>
+            {
+                new AssistSuggestion() { Text = EmployeeDetailsActions[0] },
+                new AssistSuggestion() { Text = EmployeeDetailsActions[1] },
+                new AssistSuggestion() { Text = EmployeeDetailsActions[2] }
+            };
+            chatSubjectSuggestions.Items = contactSuggestions;
+            return chatSubjectSuggestions;
+        }
+
         private AssistItemSuggestion GetFeedbackFormSuggestion()
         {
             var chatSubjectSuggestions = new AssistItemSuggestion();
@@ -543,7 +584,7 @@
                 $"The options are 'Add', 'Add Values','PlaceholderText' ,'Remove', 'Replace', 'Insert', 'New Form', 'Change Title', or 'No Change'" +
                 " Without additional formatting and special characters like backticks, newlines, or extra spaces.";
 
-            var response = await this.semanticKernelService.GetAnswerFromGPT(prompt);
+            var response = await this.azureOpenAIBaseService.GetAIResponse(prompt);
 
             if (string.IsNullOrEmpty(response))
             {
@@ -557,7 +598,14 @@
                 if (response == string.Empty)
                 {
                     UpdateBusyIndicator(false);
-                    await App.Current.MainPage.DisplayAlert("", "Please enter valid inputs.", "OK");
+                    if (Application.Current != null)
+                    {
+                        var mainWindow = Application.Current.Windows.FirstOrDefault();
+                        if (mainWindow != null && mainWindow.Page != null)
+                        {
+                            await mainWindow.Page.DisplayAlert("", "Please enter valid inputs.", "OK");
+                        }
+                    }
                 }
                 else if (response == "New Form")
                 {
@@ -568,7 +616,7 @@
                 else if (response == "Change Title")
                 {
                     string dataFormNamePrompt = $"Change the title for data form based on user prompt: {userPrompt}. Provide only the title, with no additional explanation";
-                    string getDataFormName = await this.semanticKernelService.GetAnswerFromGPT(dataFormNamePrompt);
+                    string getDataFormName = await this.azureOpenAIBaseService.GetAIResponse(dataFormNamePrompt);
                     this.DataFormNameLabel!.Text = getDataFormName;
                     AssistItem subjectMessage = new AssistItem() { Text = "The Data Form title changed successfully...", ShowAssistItemFooter = false };
                     this.DataFormGeneratorModel?.Messages.Add(subjectMessage);
@@ -587,7 +635,7 @@
         private async void GenerateAIDataForm(string userPrompt)
         {
             string dataFormNamePrompt = $"Generate a title for a data form based on the following string: {userPrompt}. The title should clearly reflect the purpose of the data form in general term. Provide only the title, with no additional explanation";
-            string getDataFormName = await this.semanticKernelService.GetAnswerFromGPT(dataFormNamePrompt);
+            string getDataFormName = await this.azureOpenAIBaseService.GetAIResponse(dataFormNamePrompt);
             this.DataFormNameLabel!.Text = getDataFormName;
 
             string prompt = $"Generate a data form based on the user prompt: {userPrompt}.";
@@ -598,7 +646,7 @@
                 "The result must be in JSON format" +
                 "Without additional formatting characters like backticks, newlines, or extra spaces.";
 
-            var typeResponse = await this.semanticKernelService.GetAnswerFromGPT(prompt + condition);
+            var typeResponse = await this.azureOpenAIBaseService.GetAIResponse(prompt + condition);
 
             var dataFormTypes = JsonConvert.DeserializeObject<Dictionary<string, object>>(typeResponse);
 
@@ -649,7 +697,7 @@
                         $" and map that property to the most appropriate DataForm available item type includes: DataFormTextItem , DataFormMultiLineTextItem, DataFormPasswordItem, DataFormNumericItem, DataFormMaskedTextItem, DataFormDateItem, DataFormTimeItem, DataFormCheckBoxItem, DataFormSwitchItem, DataFormPickerItem, DataFormComboBoxItem, DataFormAutoCompleteItem, DataFormRadioGroupItem, DataFormSegmentItem" +
        "The result must be in JSON format" +
           "Without additional formatting characters like backticks, newlines, or extra spaces.";
-                    var typeResponse = await this.semanticKernelService.GetAnswerFromGPT(prompt + condition);
+                    var typeResponse = await this.azureOpenAIBaseService.GetAIResponse(prompt + condition);
 
                     var dataFormTypes = JsonConvert.DeserializeObject<Dictionary<string, object>>(typeResponse);
                     if (dataFormTypes != null)
@@ -676,7 +724,7 @@
                     string condition = "The result must be in string" +
                         "Property name must be in PascalCase, without asking questions, or including extra explanations. " +
                         "Without additional formatting characters like backticks, newlines, or extra spaces.";
-                    string response = await this.semanticKernelService.GetAnswerFromGPT(prompt + condition);
+                    string response = await this.azureOpenAIBaseService.GetAIResponse(prompt + condition);
 
                     var removeItem = this.DataForm!.Items.FirstOrDefault(x => x != null && (x is DataFormItem dataFormItem) && dataFormItem.FieldName == response);
                     if (removeItem != null)
@@ -697,7 +745,7 @@
                                            "Do not include explanations, questions, or additional characters like backticks, newlines, or spaces. " +
                                            "Return only the Property name in PascalCase.";
 
-                        string response = await this.semanticKernelService.GetAnswerFromGPT(prompt + condition);
+                        string response = await this.azureOpenAIBaseService.GetAIResponse(prompt + condition);
 
                         string prompt1 = $"Generate a Property name from {match.Groups[3].Value.Trim()}.";
                         string condition1 = "The result must be in string and Property name must be in PascalCase,  without asking questions, or including extra explanations. " +
@@ -705,7 +753,7 @@
                            " map that generated property to the most appropriate DataForm available item type includes: DataFormTextItem , DataFormMultiLineTextItem, DataFormPasswordItem, DataFormNumericItem, DataFormMaskedTextItem, DataFormDateItem, DataFormTimeItem, DataFormCheckBoxItem, DataFormSwitchItem, DataFormPickerItem, DataFormComboBoxItem, DataFormAutoCompleteItem, DataFormRadioGroupItem, DataFormSegmentItem" +
                            "The result must be in JSON format" +
                            "without extra formatting like backticks, newlines, or special characters.";
-                        var typeResponse = await this.semanticKernelService.GetAnswerFromGPT(prompt1 + condition1);
+                        var typeResponse = await this.azureOpenAIBaseService.GetAIResponse(prompt1 + condition1);
 
                         var dataFormTypes = JsonConvert.DeserializeObject<Dictionary<string, object>>(typeResponse);
 
@@ -733,7 +781,7 @@
                  " Output the result in the exact format: 'PropertyName: PropertyName, Values: value1, value2, ...'.";
 
                     string condition = "The PropertyName must be in PascalCase, without extra questions, explanations, or formatting characters.";
-                    string response = await this.semanticKernelService.GetAnswerFromGPT(prompt + condition);
+                    string response = await this.azureOpenAIBaseService.GetAIResponse(prompt + condition);
 
                     if (response != null)
                     {
