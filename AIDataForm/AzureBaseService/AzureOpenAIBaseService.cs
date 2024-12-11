@@ -83,10 +83,6 @@ namespace AIDataForm
                     IsCredentialValid = true;
                     isAlreadyValidated = true;
                 }
-                else
-                {
-                    ShowAlertAsync();
-                }
             }
             catch (Exception)
             {
@@ -102,20 +98,12 @@ namespace AIDataForm
         {
             try
             {
-                //var client = new AzureOpenAIClient(new Uri(endpoint), new AzureKeyCredential(key)).AsChatClient(modelId: deploymentName);
-                //this.client = client;
+                var client = new AzureOpenAIClient(new Uri(endpoint), new AzureKeyCredential(key)).AsChatClient(modelId: deploymentName);
+                this.client = client;
             }
             catch (Exception)
             {
             }
-        }
-
-        /// <summary>
-        /// Show Alert 
-        /// </summary>
-        private static async void ShowAlertAsync()
-        {
-            await App.Current.MainPage.DisplayAlert("Alert", "The Azure API key or endpoint is missing or incorrect. Please verify your credentials. You can also continue with the offline data.", "OK");
         }
 
         /// <summary>

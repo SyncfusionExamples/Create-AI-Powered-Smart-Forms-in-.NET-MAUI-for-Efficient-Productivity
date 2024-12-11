@@ -263,7 +263,7 @@
         {
             UpdateBusyIndicator(true);
 
-            if (Entry != null && DataFormGeneratorModel != null && DataFormGeneratorModel.FormTitle != null)
+            if (Entry != null && DataFormGeneratorModel != null)
             {
                 if (azureOpenAIBaseService.IsCredentialValid)
                 {
@@ -271,9 +271,13 @@
                 }
                 else
                 {
-                    await CreateOfflineDataForm(this.DataFormGeneratorModel.FormTitle);
-                    DataFormGeneratorModel.ShowInputView = false;
-                    DataFormGeneratorModel.ShowDataForm = true;
+                    if (this.DataFormGeneratorModel.FormTitle != null)
+                    {
+                        await CreateOfflineDataForm(this.DataFormGeneratorModel.FormTitle);
+                        DataFormGeneratorModel.ShowInputView = false;
+                        DataFormGeneratorModel.ShowDataForm = true;
+                        DataFormGeneratorModel.ShowOfflineLabel = true;
+                    }
                 }
             }
 
