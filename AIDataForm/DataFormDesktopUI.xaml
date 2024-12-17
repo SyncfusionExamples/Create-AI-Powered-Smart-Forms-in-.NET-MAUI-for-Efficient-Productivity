@@ -20,12 +20,16 @@
         </Style>
     </ContentView.Resources>
 
-    <Grid x:Name="ParentGrid">
-        <Grid.BindingContext>
-            <local:DataFormGeneratorModel x:Name="dataFormGeneratorModel" />
-        </Grid.BindingContext>
+    <Border x:Name="ParentBorder" HeightRequest="600" WidthRequest="1200" Stroke="{AppThemeBinding Default={StaticResource Border}}">
+        <Border.StrokeShape>
+            <RoundRectangle CornerRadius="10"/>
+        </Border.StrokeShape>
+        <Grid x:Name="ParentGrid">
+            <Grid.BindingContext>
+                <local:DataFormGeneratorModel x:Name="dataFormGeneratorModel" />
+            </Grid.BindingContext>
 
-        <buttons:SfButton x:Name="aiActionButton" IsVisible="{Binding ShowDataForm}" 
+            <buttons:SfButton x:Name="aiActionButton" IsVisible="{Binding ShowDataForm}" 
                   CornerRadius="5" 
                   Text="&#xe7e1;" 
                   FontFamily="MauiSampleFontIcon"
@@ -41,14 +45,14 @@
                   AbsoluteLayout.LayoutBounds="0.90, 0.90, 50, 50"
                   AbsoluteLayout.LayoutFlags="PositionProportional"/>
 
-        <Grid RowDefinitions="0.5*,0.5*" IsVisible="{Binding ShowInputView}">
-            <VerticalStackLayout VerticalOptions="End"  HorizontalOptions="Center" WidthRequest="500">
-                <Label x:Name="describeLabel"
+            <Grid RowDefinitions="0.5*,0.5*" IsVisible="{Binding ShowInputView}">
+                <VerticalStackLayout VerticalOptions="End"  HorizontalOptions="Center" WidthRequest="500">
+                    <Label x:Name="describeLabel"
        Text="Create AI-Powered Smart Forms in .NET MAUI for Efficient Data Capture." LineBreakMode="WordWrap"
        FontSize="Small" FontAttributes="Bold" />
 
-                <Grid ColumnDefinitions="Auto,Auto" Margin="0,20,0,0" ColumnSpacing="5">
-                    <Editor AutoSize="TextChanges" 
+                    <Grid ColumnDefinitions="Auto,Auto" Margin="0,20,0,0" ColumnSpacing="5">
+                        <Editor AutoSize="TextChanges" 
                         x:Name="entry"
                         PlaceholderColor="Gray"
                         HeightRequest="60"
@@ -59,7 +63,7 @@
                         WidthRequest="400" TextColor="{AppThemeBinding Default={StaticResource ContentForeground}}"
                         Placeholder="Create your own data form"/>
 
-                    <Button x:Name="createButton"
+                        <Button x:Name="createButton"
                         BackgroundColor="{AppThemeBinding Default={StaticResource PrimaryBackground}}"
                         TextColor="{AppThemeBinding Default={StaticResource PrimaryForeground}}"
                         IsEnabled="False"
@@ -71,91 +75,91 @@
                         FontFamily="MauiMaterialAssets"
                         VerticalOptions="Center"
                         HorizontalOptions="End"/>
-                </Grid>
-            </VerticalStackLayout>
-            <ScrollView Grid.Row="1" Orientation="Horizontal">
-                <HorizontalStackLayout x:Name="listView" BindableLayout.ItemsSource="{Binding Templates}" Padding="20,0,0,0" 
+                    </Grid>
+                </VerticalStackLayout>
+                <ScrollView Grid.Row="1" Orientation="Horizontal">
+                    <HorizontalStackLayout x:Name="listView" BindableLayout.ItemsSource="{Binding Templates}" Padding="20,0,0,0" 
                            HorizontalOptions="Center" HeightRequest="80">
-                    <BindableLayout.ItemTemplate>
-                        <DataTemplate>
-                            <Border Margin="5" Stroke="#CAC4D0" StrokeShape="RoundRectangle 10">
-                                <Border.GestureRecognizers>
-                                    <TapGestureRecognizer Tapped="TapGestureRecognizer_Tapped"/>
-                                </Border.GestureRecognizers>
-                                <VisualStateManager.VisualStateGroups>
-                                    <VisualStateGroup x:Name="CommonStates">
-                                        <VisualState x:Name="Normal">
-                                            <VisualState.Setters>
-                                                <Setter Property="Background" Value="Transparent" />
-                                            </VisualState.Setters>
-                                        </VisualState>
-                                        <VisualState x:Name="PointerOver">
-                                            <VisualState.Setters>
-                                                <Setter Property="Background" Value="#14000000" />
-                                            </VisualState.Setters>
-                                        </VisualState>
-                                    </VisualStateGroup>
-                                </VisualStateManager.VisualStateGroups>
-                                <HorizontalStackLayout>
-                                    <Label Text="{Binding Font}" FontFamily="MauiSampleFontIcon" FontSize="25" Margin="15,0,0,0" VerticalOptions="Center" HorizontalOptions="Fill"/>
-                                    <Grid RowDefinitions="auto,auto" Padding="16" >
-                                        <Label Text="{Binding Title}" FontAttributes="Bold" FontSize="16" HorizontalOptions="Fill"/>
-                                        <Label Grid.Row="1" x:Name="Description" Text="{Binding Description}" FontSize="14" HorizontalOptions="Fill" LineBreakMode="WordWrap"/>
-                                    </Grid>
-                                </HorizontalStackLayout>
-                            </Border>
-                        </DataTemplate>
-                    </BindableLayout.ItemTemplate>
-                </HorizontalStackLayout>
-            </ScrollView>
-        </Grid>
-        <Grid x:Name="mainGrid" IsVisible="{Binding ShowDataForm}" ColumnDefinitions="*,*" HorizontalOptions="Center" BackgroundColor="{DynamicResource SfDataFormNormalBackground}">
-            <Grid Grid.Column="0" HeightRequest="550" BackgroundColor="{DynamicResource SfDataFormNormalBackground}">
-                <Border  StrokeShape="RoundRectangle 10" Stroke="#CAC4D0" StrokeThickness="1" WidthRequest="450" Padding="10" Margin="0,0,25,0">
-                    <Grid BackgroundColor="{DynamicResource SfDataFormNormalBackground}">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="45"/>
-                            <RowDefinition Height="0.8*"/>
-                            <RowDefinition Height="1"/>
-                            <RowDefinition Height="45"/>
-                        </Grid.RowDefinitions>
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate>
+                                <Border Margin="5" Stroke="#CAC4D0" StrokeShape="RoundRectangle 10">
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Tapped="TapGestureRecognizer_Tapped"/>
+                                    </Border.GestureRecognizers>
+                                    <VisualStateManager.VisualStateGroups>
+                                        <VisualStateGroup x:Name="CommonStates">
+                                            <VisualState x:Name="Normal">
+                                                <VisualState.Setters>
+                                                    <Setter Property="Background" Value="Transparent" />
+                                                </VisualState.Setters>
+                                            </VisualState>
+                                            <VisualState x:Name="PointerOver">
+                                                <VisualState.Setters>
+                                                    <Setter Property="Background" Value="#14000000" />
+                                                </VisualState.Setters>
+                                            </VisualState>
+                                        </VisualStateGroup>
+                                    </VisualStateManager.VisualStateGroups>
+                                    <HorizontalStackLayout>
+                                        <Label Text="{Binding Font}" FontFamily="MauiSampleFontIcon" FontSize="25" Margin="15,0,0,0" VerticalOptions="Center" HorizontalOptions="Fill"/>
+                                        <Grid RowDefinitions="auto,auto" Padding="16" >
+                                            <Label Text="{Binding Title}" FontAttributes="Bold" FontSize="16" HorizontalOptions="Fill"/>
+                                            <Label Grid.Row="1" x:Name="Description" Text="{Binding Description}" FontSize="14" HorizontalOptions="Fill" LineBreakMode="WordWrap"/>
+                                        </Grid>
+                                    </HorizontalStackLayout>
+                                </Border>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </HorizontalStackLayout>
+                </ScrollView>
+            </Grid>
+            <Grid x:Name="mainGrid" IsVisible="{Binding ShowDataForm}" ColumnDefinitions="*,*" HorizontalOptions="Center" BackgroundColor="{DynamicResource SfDataFormNormalBackground}">
+                <Grid Grid.Column="0" HeightRequest="550" BackgroundColor="{DynamicResource SfDataFormNormalBackground}">
+                    <Border  StrokeShape="RoundRectangle 10" Stroke="#CAC4D0" StrokeThickness="1" WidthRequest="450" Padding="10" Margin="0,0,25,0">
+                        <Grid BackgroundColor="{DynamicResource SfDataFormNormalBackground}">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="45"/>
+                                <RowDefinition Height="0.8*"/>
+                                <RowDefinition Height="1"/>
+                                <RowDefinition Height="45"/>
+                            </Grid.RowDefinitions>
 
-                        <Label x:Name="dataFormNameLabel" Text="Your Data Form Renders Here." TextColor="{DynamicResource SfDataFormNormalEditorTextColor}" FontSize="Subtitle" 
+                            <Label x:Name="dataFormNameLabel" Text="Your Data Form Renders Here." TextColor="{DynamicResource SfDataFormNormalEditorTextColor}" FontSize="Subtitle" 
                             FontAttributes="Bold" VerticalTextAlignment="Center"
                             HorizontalTextAlignment="Center"/>
-                        <dataform:SfDataForm x:Name="dataForm" AutoGenerateItems="False"
+                            <dataform:SfDataForm x:Name="dataForm" AutoGenerateItems="False"
                                           Grid.RowSpan="1"
                                           Grid.Row="1"
                                           ValidationMode="PropertyChanged"
                                           LayoutType="TextInputLayout"
                                           HorizontalOptions="Center"
                                           BackgroundColor="{DynamicResource SfDataFormNormalBackground}">
-                            <dataform:SfDataForm.TextInputLayoutSettings>
-                                <dataform:TextInputLayoutSettings ShowHelperText="True"
+                                <dataform:SfDataForm.TextInputLayoutSettings>
+                                    <dataform:TextInputLayoutSettings ShowHelperText="True"
                                                                FocusedStroke="{DynamicResource SfDataFormFocusedEditorStroke}"/>
-                            </dataform:SfDataForm.TextInputLayoutSettings>
-                        </dataform:SfDataForm>
-                        <Button x:Name="submitButton" IsVisible="{Binding ShowSubmitButton}" Grid.Row="3" Text="Save" 
+                                </dataform:SfDataForm.TextInputLayoutSettings>
+                            </dataform:SfDataForm>
+                            <Button x:Name="submitButton" IsVisible="{Binding ShowSubmitButton}" Grid.Row="3" Text="Save" 
                              CornerRadius="20"
                              FontSize="16"
                              Margin="20, 0, 20, 0" />
-                    </Grid>
-                </Border>
-            </Grid>
+                        </Grid>
+                    </Border>
+                </Grid>
 
-            <Border x:Name="headerView" HeightRequest="550" WidthRequest="350" Stroke="#CAC4D0" StrokeThickness="1" StrokeShape="RoundRectangle 10" IsVisible="{Binding ShowAssistView}"
+                <Border x:Name="headerView" HeightRequest="550" WidthRequest="350" Stroke="#CAC4D0" StrokeThickness="1" StrokeShape="RoundRectangle 10" IsVisible="{Binding ShowAssistView}"
                    HorizontalOptions="Center"  Grid.Column="1" >
-                <VerticalStackLayout>
-                    <Grid RowDefinitions="auto,auto">
-                        <Grid ColumnDefinitions="auto,*" BackgroundColor="{DynamicResource SfDataFormNormalBackground}">
-                            <Label Text="AI Assistant" 
+                    <VerticalStackLayout>
+                        <Grid RowDefinitions="auto,auto">
+                            <Grid ColumnDefinitions="auto,*" BackgroundColor="{DynamicResource SfDataFormNormalBackground}">
+                                <Label Text="AI Assistant" 
                        Grid.Column="0" 
                        FontSize="16" 
                        FontFamily="Roboto-Medium" 
                        Padding="16,0,0,0"  VerticalTextAlignment="Center"
                        FontAttributes="Bold"
                        VerticalOptions="Center"/>
-                            <Button x:Name="close" Grid.Column="1" BorderWidth="0" 
+                                <Button x:Name="close" Grid.Column="1" BorderWidth="0" 
                                  CornerRadius="20" 
                                  Text="&#xe70b;" 
                                  HeightRequest="30"
@@ -168,34 +172,34 @@
                                  FontFamily="MauiMaterialAssets" 
                                  ToolTipProperties.Text="Close" Padding="0"
                                  Margin="5">
-                                <VisualStateManager.VisualStateGroups>
-                                    <VisualStateGroupList>
-                                        <VisualStateGroup x:Name="CommonStates">
-                                            <VisualState x:Name="Normal">
-                                                <VisualState.Setters>
-                                                    <Setter Property="BackgroundColor"
+                                    <VisualStateManager.VisualStateGroups>
+                                        <VisualStateGroupList>
+                                            <VisualStateGroup x:Name="CommonStates">
+                                                <VisualState x:Name="Normal">
+                                                    <VisualState.Setters>
+                                                        <Setter Property="BackgroundColor"
                                                         Value="Transparent" />
-                                                    <Setter Property="Opacity"
+                                                        <Setter Property="Opacity"
                                                         Value="1" />
-                                                </VisualState.Setters>
-                                            </VisualState>
-                                            <VisualState x:Name="Pressed">
-                                                <VisualState.Setters>
-                                                    <Setter Property="BackgroundColor"
+                                                    </VisualState.Setters>
+                                                </VisualState>
+                                                <VisualState x:Name="Pressed">
+                                                    <VisualState.Setters>
+                                                        <Setter Property="BackgroundColor"
                                                         Value="#14000000" />
-                                                </VisualState.Setters>
-                                            </VisualState>
-                                            <VisualState x:Name="PointerOver">
-                                                <VisualState.Setters>
-                                                    <Setter Property="BackgroundColor"
+                                                    </VisualState.Setters>
+                                                </VisualState>
+                                                <VisualState x:Name="PointerOver">
+                                                    <VisualState.Setters>
+                                                        <Setter Property="BackgroundColor"
                                                         Value="#14000000" />
-                                                </VisualState.Setters>
-                                            </VisualState>
-                                        </VisualStateGroup>
-                                    </VisualStateGroupList>
-                                </VisualStateManager.VisualStateGroups>
-                            </Button>
-                            <Button x:Name="refreshButton"
+                                                    </VisualState.Setters>
+                                                </VisualState>
+                                            </VisualStateGroup>
+                                        </VisualStateGroupList>
+                                    </VisualStateManager.VisualStateGroups>
+                                </Button>
+                                <Button x:Name="refreshButton"
                                 Grid.Column="1"
                                 CornerRadius="30"
                                 HeightRequest="30"
@@ -209,54 +213,55 @@
                                 ToolTipProperties.Text="Refresh"
                                 Margin="0,5,35,5"
                                 Padding="0">
-                                <VisualStateManager.VisualStateGroups>
-                                    <VisualStateGroupList>
-                                        <VisualStateGroup x:Name="CommonStates">
-                                            <VisualState x:Name="Normal">
-                                                <VisualState.Setters>
-                                                    <Setter Property="BackgroundColor"
+                                    <VisualStateManager.VisualStateGroups>
+                                        <VisualStateGroupList>
+                                            <VisualStateGroup x:Name="CommonStates">
+                                                <VisualState x:Name="Normal">
+                                                    <VisualState.Setters>
+                                                        <Setter Property="BackgroundColor"
                                     Value="Transparent" />
-                                                    <Setter Property="Opacity"
+                                                        <Setter Property="Opacity"
                                     Value="1" />
-                                                </VisualState.Setters>
-                                            </VisualState>
-                                            <VisualState x:Name="Pressed">
-                                                <VisualState.Setters>
-                                                    <Setter Property="BackgroundColor"
+                                                    </VisualState.Setters>
+                                                </VisualState>
+                                                <VisualState x:Name="Pressed">
+                                                    <VisualState.Setters>
+                                                        <Setter Property="BackgroundColor"
                                     Value="#14000000" />
-                                                </VisualState.Setters>
-                                            </VisualState>
-                                            <VisualState x:Name="PointerOver">
-                                                <VisualState.Setters>
-                                                    <Setter Property="BackgroundColor"
+                                                    </VisualState.Setters>
+                                                </VisualState>
+                                                <VisualState x:Name="PointerOver">
+                                                    <VisualState.Setters>
+                                                        <Setter Property="BackgroundColor"
                                     Value="#14000000" />
-                                                </VisualState.Setters>
-                                            </VisualState>
-                                        </VisualStateGroup>
-                                    </VisualStateGroupList>
-                                </VisualStateManager.VisualStateGroups>
-                            </Button>
+                                                    </VisualState.Setters>
+                                                </VisualState>
+                                            </VisualStateGroup>
+                                        </VisualStateGroupList>
+                                    </VisualStateManager.VisualStateGroups>
+                                </Button>
+                            </Grid>
+                            <BoxView Grid.Row="1" HeightRequest="1" Margin="1" BackgroundColor="#CAC4D0"/>
                         </Grid>
-                        <BoxView Grid.Row="1" HeightRequest="1" Margin="1" BackgroundColor="#CAC4D0"/>
-                    </Grid>
 
-                    <aiassistview:SfAIAssistView Grid.Row="2"  x:Name="aiAssistView" WidthRequest="350" HeightRequest="500" VerticalOptions="End"
+                        <aiassistview:SfAIAssistView Grid.Row="2"  x:Name="aiAssistView" WidthRequest="350" HeightRequest="500" VerticalOptions="End"
                          ShowHeader="False" Background="{DynamicResource SfDataFormNormalBackground}"
                          AssistItems="{Binding Messages}">
 
-                        <aiassistview:SfAIAssistView.Behaviors>
-                            <local:DataFormAssistViewBehavior x:Name="dataFormAssistViewModel"  AIActionButton="{x:Reference aiActionButton}" CloseButton="{x:Reference close}" DataFormNameLabel="{x:Reference dataFormNameLabel}" RefreshButton="{x:Reference refreshButton}" BusyIndicator="{x:Reference busyIndicator}"  DataForm="{x:Reference dataForm}"  DataFormGeneratorModel="{x:Reference dataFormGeneratorModel}" Entry="{x:Reference entry}" CreateButton="{x:Reference createButton}" />
-                        </aiassistview:SfAIAssistView.Behaviors>
-                    </aiassistview:SfAIAssistView>
+                            <aiassistview:SfAIAssistView.Behaviors>
+                                <local:DataFormAssistViewBehavior x:Name="dataFormAssistViewModel"  AIActionButton="{x:Reference aiActionButton}" CloseButton="{x:Reference close}" DataFormNameLabel="{x:Reference dataFormNameLabel}" RefreshButton="{x:Reference refreshButton}" BusyIndicator="{x:Reference busyIndicator}"  DataForm="{x:Reference dataForm}"  DataFormGeneratorModel="{x:Reference dataFormGeneratorModel}" Entry="{x:Reference entry}" CreateButton="{x:Reference createButton}" />
+                            </aiassistview:SfAIAssistView.Behaviors>
+                        </aiassistview:SfAIAssistView>
 
-                </VerticalStackLayout>
-            </Border>
-        </Grid>
+                    </VerticalStackLayout>
+                </Border>
+            </Grid>
 
-        <core:SfBusyIndicator IsVisible="False"
+            <core:SfBusyIndicator IsVisible="False"
                           x:Name="busyIndicator"
                           IsRunning="False"
                           AnimationType="Cupertino" />
 
-    </Grid>
+        </Grid>
+    </Border>
 </ContentView>
