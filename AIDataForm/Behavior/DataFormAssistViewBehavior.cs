@@ -8,6 +8,7 @@
     using Syncfusion.Maui.DataForm;
     using Syncfusion.Maui.Buttons;
     using System.Text.RegularExpressions;
+    using Newtonsoft.Json;
 
     /// <summary>
     /// The data form assist view behavior.
