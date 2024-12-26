@@ -55,7 +55,7 @@ namespace AIDataForm
 
         #endregion
 
-        #region Private Methods
+        #region Methods
 
         /// <summary>
         /// Validate Azure Credentials
@@ -67,7 +67,6 @@ namespace AIDataForm
             this.GetAzureOpenAIKernal();
             #endregion
 
-            #endregion
 
             if (isAlreadyValidated)
             {
@@ -90,7 +89,6 @@ namespace AIDataForm
             }
         }
 
-        #region Azure OpenAI
         /// <summary>
         /// To get the Azure OpenAI method
         /// </summary>
