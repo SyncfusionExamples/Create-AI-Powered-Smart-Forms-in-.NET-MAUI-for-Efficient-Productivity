@@ -31,7 +31,7 @@
             <Grid RowDefinitions="0.3*,0.7*" IsVisible="{Binding ShowInputView}">
                 <VerticalStackLayout Margin="20" VerticalOptions="Center" HorizontalOptions="Center">
                     <Label x:Name="describeLabel" 
-                 Text="Create AI-Powered Smart Forms in .NET MAUI for Efficient Productivity."
+                 Text="Create AI-Powered Smart Forms in .NET MAUI for Efficient Data Capture."
                  LineBreakMode="WordWrap" FontSize="Small" FontAttributes="Bold" />
                     <Grid ColumnDefinitions="0.7*,0.3*" Margin="10" ColumnSpacing="5">
 
