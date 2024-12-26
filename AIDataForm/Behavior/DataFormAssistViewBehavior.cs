@@ -275,10 +275,15 @@
                     if (this.DataFormGeneratorModel.FormTitle != null)
                     {
                         await CreateOfflineDataForm(this.DataFormGeneratorModel.FormTitle);
-                        DataFormGeneratorModel.ShowInputView = false;
-                        DataFormGeneratorModel.ShowDataForm = true;
-                        DataFormGeneratorModel.ShowOfflineLabel = true;
                     }
+                    else
+                    {
+                        await CreateOfflineDataForm("Contact Form");
+                    }
+
+                    DataFormGeneratorModel.ShowInputView = false;
+                    DataFormGeneratorModel.ShowDataForm = true;
+                    DataFormGeneratorModel.ShowOfflineLabel = true;
                 }
             }
 
