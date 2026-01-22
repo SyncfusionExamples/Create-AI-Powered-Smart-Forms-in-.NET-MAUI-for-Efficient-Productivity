@@ -1,126 +1,128 @@
-﻿// Ignore Spelling: Offline
-
-namespace AIDataForm
+﻿namespace AIDataForm
 {
-    using Syncfusion.Maui.AIAssistView;
     using System.Collections.ObjectModel;
     using System.ComponentModel;
+    using Syncfusion.Maui.AIAssistView;
 
     /// <summary>
-    /// The DataForm generator model class.
+    /// DataForm Generator Model.
     /// </summary>
     public class DataFormGeneratorModel : INotifyPropertyChanged
     {
-        private bool showDataForm, showAssistView, showSubmitButton, showInputView, showOfflineLabel;
-
-        /// <summary>
-        /// Gets or sets the template title
-        /// </summary>
-        internal string? FormTitle { get; set; }
+        private bool showDataForm;
+        private bool showAssistView;
+        private bool showSubmitButton;
+        private bool showInputView;
+        private bool showOfflineLabel;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DataFormGeneratorModel"/> class.
         /// </summary>
         public DataFormGeneratorModel()
         {
-            showInputView = true;
-            showOfflineLabel = true;
+            this.showInputView = true;
+            this.showOfflineLabel = true;
 
-            // Initialize Templates collection with sample data
-            Templates = new ObservableCollection<TemplateItem>
+            this.Templates = new ObservableCollection<TemplateItem>
             {
-                new TemplateItem { Font="\ue763", Title = "Contact Form", Description = "Create a form to capture user details." },
-                new TemplateItem { Font="\ue761", Title = "Employment Details", Description = "Create a form to capture employment details." },
-                new TemplateItem { Font="\ue73a", Title = "Feedback Form", Description = "Create a form to receive client feedback." }
+                new TemplateItem { Font = "\ue763", Title = "Contact Form", Description = "Create a form to capture user details." },
+                new TemplateItem { Font = "\ue761", Title = "Employment Details", Description = "Create a form to capture employment details." },
+                new TemplateItem { Font = "\ue73a", Title = "Feedback Form", Description = "Create a form to receive client feedback." },
             };
         }
 
         /// <summary>
-        /// Gets or sets the collection of templates.
-        /// </summary>
-        public ObservableCollection<TemplateItem> Templates { get; set; }
-
-        /// <summary>
-        /// Gets or sets the collection of messages of a conversation.
-        /// </summary>
-        public ObservableCollection<IAssistItem> Messages { get; set; } = new ObservableCollection<IAssistItem>();
-
-        /// <summary>
-        /// Gets or sets a value indicating whether the data form is visible.
-        /// </summary>
-        public bool ShowDataForm
-        {
-            get { return this.showDataForm; }
-            set
-            {
-                this.showDataForm = value;
-                RaisePropertyChanged(nameof(this.ShowDataForm));
-            }
-        }
-
-        public bool ShowAssistView
-        {
-            get { return this.showAssistView; }
-            set
-            {
-                this.showAssistView = value;
-                RaisePropertyChanged(nameof(this.ShowAssistView));
-            }
-        }
-
-        public bool ShowInputView
-        {
-            get { return this.showInputView; }
-            set
-            {
-                this.showInputView = value;
-                RaisePropertyChanged(nameof(this.ShowInputView));
-            }
-        }
-
-        public bool ShowSubmitButton
-        {
-            get { return this.showSubmitButton; }
-            set
-            {
-                this.showSubmitButton = value;
-                RaisePropertyChanged(nameof(this.ShowSubmitButton));
-            }
-        }
-
-        public bool ShowOfflineLabel
-        {
-            get { return this.showOfflineLabel; }
-            set
-            {
-                this.showOfflineLabel = value;
-                RaisePropertyChanged(nameof(this.ShowOfflineLabel));
-            }
-        }
-
-        /// <summary>
-        /// Property changed handler.
+        /// Occurs when a property value changes.
         /// </summary>
         public event PropertyChangedEventHandler? PropertyChanged;
 
         /// <summary>
-        /// Occurs when a property is changed.
+        /// Gets or sets the templates.
         /// </summary>
-        /// <param name="propName">The name of the changed property.</param>
-        public void RaisePropertyChanged(string propName)
+        public ObservableCollection<TemplateItem> Templates { get; set; }
+
+        /// <summary>
+        /// Gets or sets the messages.
+        /// </summary>
+        public ObservableCollection<IAssistItem> Messages { get; set; } = new ObservableCollection<IAssistItem>();
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to show data form.
+        /// </summary>
+        public bool ShowDataForm
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
+            get => this.showDataForm;
+            set
+            {
+                this.showDataForm = value;
+                this.RaisePropertyChanged(nameof(this.ShowDataForm));
+            }
         }
 
-    }
+        /// <summary>
+        /// Gets or sets a value indicating whether to show assist view.
+        /// </summary>
+        public bool ShowAssistView
+        {
+            get => this.showAssistView;
+            set
+            {
+                this.showAssistView = value;
+                this.RaisePropertyChanged(nameof(this.ShowAssistView));
+            }
+        }
 
-    /// <summary>
-    /// Represents a template item with title and description.
-    /// </summary>
-    public class TemplateItem
-    {
-        public string? Font { get; set; }
-        public string? Title { get; set; }
-        public string? Description { get; set; }
+        /// <summary>
+        /// Gets or sets a value indicating whether to show input view.
+        /// </summary>
+        public bool ShowInputView
+        {
+            get => this.showInputView;
+            set
+            {
+                this.showInputView = value;
+                this.RaisePropertyChanged(nameof(this.ShowInputView));
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to show submit button.
+        /// </summary>
+        public bool ShowSubmitButton
+        {
+            get => this.showSubmitButton;
+            set
+            {
+                this.showSubmitButton = value;
+                this.RaisePropertyChanged(nameof(this.ShowSubmitButton));
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to show offline label.
+        /// </summary>
+        public bool ShowOfflineLabel
+        {
+            get => this.showOfflineLabel;
+            set
+            {
+                this.showOfflineLabel = value;
+                this.RaisePropertyChanged(nameof(this.ShowOfflineLabel));
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the form title.
+        /// </summary>
+        internal string? FormTitle { get; set; }
+
+        /// <summary>
+        /// Raises the property changed event.
+        /// </summary>
+        /// <param name="propName">The string propname.</param>
+        public void RaisePropertyChanged(string propName)
+        {
+            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
+        }
     }
 }

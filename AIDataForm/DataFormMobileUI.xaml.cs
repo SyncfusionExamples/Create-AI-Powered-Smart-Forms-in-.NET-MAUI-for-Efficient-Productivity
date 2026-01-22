@@ -7,6 +7,11 @@ public partial class DataFormMobileUI : ContentView
 		InitializeComponent();
 	}
 
+    /// <summary>
+    /// Handles the Tapped event of the TapGestureRecognizer control.
+    /// </summary>
+    /// <param name="sender">The sender value.</param>
+    /// <param name="e">The event args.</param>
     private void TapGestureRecognizer_Tapped(object sender, TappedEventArgs e)
     {
         var templateItem = (sender as Border)?.BindingContext as TemplateItem;
